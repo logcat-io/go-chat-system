@@ -1,0 +1,4 @@
+// 토큰 진입점. 다른 층은 이 파일만 @use 한다.
+@forward "color";
+@forward "scale";
+@forward "glyph";

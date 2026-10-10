@@ -1,0 +1,199 @@
+// 데스크 설정·관리 화면과 로그인 화면.
+@use "../tokens" as *;
+@use "../tools" as *;
+
+.settings {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: 0;
+}
+
+.settings-nav {
+  padding: space(3) space(2);
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--panel);
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: space(2);
+    width: 100%;
+    padding: space(2) space(2.5);
+    border-radius: var(--r);
+    color: var(--ink-2);
+    font-size: font-size("sm");
+    font-weight: weight("semibold");
+    text-align: left;
+
+    &[aria-current="true"] {
+      background: var(--brand-soft);
+      color: var(--brand-text);
+    }
+  }
+}
+
+.settings-body {
+  min-width: 0;
+  padding: space(6);
+  overflow-y: auto;
+
+  > section {
+    max-width: 720px;
+  }
+
+  h2 {
+    margin: 0 0 space(1);
+    font-size: font-size("xl");
+  }
+
+  .lead {
+    margin: 0 0 space(5);
+  }
+}
+
+// 관리 화면의 덩어리 하나(흰 카드). .btn.block(줄 전체 단추)과 이름이 같아 설정 본문 안으로 한정한다.
+.settings-body .block {
+  min-width: 0;
+  margin-bottom: space(4);
+  padding: space(4.5);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--panel);
+
+  h3 {
+    margin: 0 0 space(3);
+    font-size: font-size("md");
+  }
+
+  // 덩어리 머리: 제목과 오른쪽 단추
+  .block-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: space(2);
+    margin-bottom: space(2.5);
+
+    h3 {
+      margin: 0;
+    }
+  }
+
+  .block-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: space(2);
+    margin-top: space(3);
+  }
+}
+
+.hours-day {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: space(2);
+  padding: space(1.5) 0;
+
+  .ranges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: space(1.5);
+  }
+
+  .range {
+    display: inline-flex;
+    align-items: center;
+    gap: space(1);
+  }
+
+  input[type="time"] {
+    width: 104px;
+    height: 30px;
+    padding: 0 space(2);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+  }
+}
+
+// 관리 화면(D36): 위젯 FAQ 편집 항목
+.faq-item {
+  margin-bottom: space(2.5);
+  padding: space(2.5) space(3);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+
+  .faq-item-head {
+    display: flex;
+    align-items: center;
+    gap: space(1);
+    margin-bottom: space(1.5);
+  }
+
+  textarea {
+    min-height: 64px;
+  }
+}
+
+// 빠른 답변 목록의 본문 미리보기(두 줄)
+.snippet-body {
+  @include line-clamp(2);
+
+  max-width: 520px;
+  white-space: pre-line;
+}
+
+.login {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: space(4);
+
+  .card {
+    width: 100%;
+    max-width: 380px;
+    padding: space(6);
+  }
+
+  .login-title {
+    margin: 0 0 space(1);
+    font-size: font-size("xl");
+  }
+
+  .login-lead {
+    margin: 0 0 space(5);
+    color: var(--ink-3);
+    font-size: font-size("sm");
+  }
+
+  .login-foot {
+    margin: space(3.5) 0 0;
+    color: var(--ink-3);
+    font-size: font-size("xs");
+    text-align: center;
+  }
+
+  .login-links {
+    display: grid;
+    gap: space(2.5);
+  }
+}
+
+@include below("tablet") {
+  .settings {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  // 설정 메뉴도 받은함 필터처럼 ☰ 로 여는 왼쪽 서랍이다(정책 827). 가로로 미는 줄은 열한 개 가운데 서너 개만 보여 나머지가 있는지 몰랐다.
+  .settings-nav {
+    @include drawer(left, $drawer-nav);
+  }
+
+  .desk.nav-open .settings-nav {
+    @include drawer-open;
+  }
+
+  .settings-body {
+    padding: space(4);
+  }
+}

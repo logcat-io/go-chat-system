@@ -1,0 +1,105 @@
+{
+  "family": "chat-server-${ENV}",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "runtimePlatform": { "cpuArchitecture": "X86_64", "operatingSystemFamily": "LINUX" },
+  "cpu": "${TASK_CPU}",
+  "memory": "${TASK_MEMORY}",
+  "executionRoleArn": "arn:aws:iam::${ACCOUNT_ID}:role/chat-${ENV}-task-execution",
+  "taskRoleArn": "arn:aws:iam::${ACCOUNT_ID}:role/chat-${ENV}-task",
+  "containerDefinitions": [
+    {
+      "name": "app",
+      "image": "IMAGE_IS_SET_BY_RENDER_STEP",
+      "essential": true,
+      "portMappings": [{ "containerPort": 8080, "protocol": "tcp", "name": "http" }],
+      "stopTimeout": 45,
+      "linuxParameters": { "initProcessEnabled": true },
+      "ulimits": [{ "name": "nofile", "softLimit": 65536, "hardLimit": 65536 }],
+      "environment": [
+        { "name": "CHAT_ADDR", "value": ":8080" },
+        { "name": "CHAT_PUBLIC_URL", "value": "${PUBLIC_URL}" },
+        { "name": "CHAT_LOG_FORMAT", "value": "json" },
+        { "name": "CHAT_LOG_LEVEL", "value": "info" },
+        { "name": "CHAT_TRUSTED_PROXIES", "value": "2" },
+        { "name": "CHAT_SHUTDOWN_DRAIN", "value": "5s" },
+        { "name": "CHAT_DB_MAX_CONNS", "value": "40" },
+        { "name": "CHAT_CATCHUP_INTERVAL", "value": "5s" },
+        { "name": "CHAT_ENTRY_RATE_PER_MINUTE", "value": "${ENTRY_RATE_PER_MINUTE}" },
+        { "name": "CHAT_SEED_DEMO", "value": "${SEED_DEMO}" },
+        { "name": "CHAT_SEED_AGENT_EMAIL", "value": "${SEED_AGENT_EMAIL}" },
+        { "name": "CHAT_SEED_AGENT_COUNT", "value": "${SEED_AGENT_COUNT}" },
+        { "name": "CHAT_STORAGE", "value": "s3" },
+        { "name": "CHAT_S3_ENDPOINT", "value": "https://s3.ap-northeast-2.amazonaws.com" },
+        { "name": "CHAT_S3_REGION", "value": "ap-northeast-2" },
+        { "name": "CHAT_S3_BUCKET", "value": "${S3_BUCKET}" },
+        { "name": "CHAT_S3_PATH_STYLE", "value": "false" },
+        { "name": "CHAT_S3_CREATE_BUCKET", "value": "false" },
+        { "name": "CHAT_MAX_UPLOAD_MB", "value": "100" },
+        { "name": "OTEL_SERVICE_NAME", "value": "go-chat-server" },
+        { "name": "OTEL_RESOURCE_ATTRIBUTES", "value": "deployment.environment.name=${ENV}" },
+        { "name": "OTEL_EXPORTER_OTLP_ENDPOINT", "value": "http://127.0.0.1:4318" },
+        { "name": "OTEL_EXPORTER_OTLP_PROTOCOL", "value": "http/protobuf" },
+        { "name": "OTEL_TRACES_SAMPLER", "value": "parentbased_traceidratio" },
+        { "name": "OTEL_TRACES_SAMPLER_ARG", "value": "${TRACE_SAMPLE_RATIO}" },
+        { "name": "OTEL_METRIC_EXPORT_INTERVAL", "value": "60000" }
+      ],
+      "secrets": [
+        { "name": "CHAT_DATABASE_URL", "valueFrom": "${SECRET_ARN}:CHAT_DATABASE_URL::" },
+        { "name": "CHAT_MEMBER_SECRET", "valueFrom": "${SECRET_ARN}:CHAT_MEMBER_SECRET::" },
+        { "name": "CHAT_SEED_AGENT_PASSWORD", "valueFrom": "${SECRET_ARN}:CHAT_SEED_AGENT_PASSWORD::" }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/healthz || exit 1"],
+        "interval": 10,
+        "timeout": 3,
+        "retries": 3,
+        "startPeriod": 90
+      },
+      "dependsOn": [{ "containerName": "adot", "condition": "START" }],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/chat/${ENV}",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "app",
+          "mode": "non-blocking",
+          "max-buffer-size": "25m"
+        }
+      }
+    },
+    {
+      "name": "adot",
+      "image": "public.ecr.aws/aws-observability/aws-otel-collector:${ADOT_VERSION}",
+      "essential": false,
+      "memoryReservation": 256,
+      "environment": [
+        { "name": "CHAT_ENV", "value": "${ENV}" }
+      ],
+      "secrets": [
+        { "name": "AOT_CONFIG_CONTENT", "valueFrom": "arn:aws:ssm:ap-northeast-2:${ACCOUNT_ID}:parameter/chat/${ENV}/adot-config" }
+      ],
+      "healthCheck": {
+        "command": ["/healthcheck"],
+        "interval": 10,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 10
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/chat/${ENV}",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "adot",
+          "mode": "non-blocking",
+          "max-buffer-size": "4m"
+        }
+      }
+    }
+  ],
+  "tags": [
+    { "key": "app", "value": "go-chat" },
+    { "key": "env", "value": "${ENV}" }
+  ]
+}

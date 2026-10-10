@@ -1,0 +1,129 @@
+// 만족도(D45): 읽기 전용 별점, 위젯 대화 안의 평가 카드, 데스크 대화 옆 칸의 평가 요약.
+// 채운 별은 흰 바탕 위 관리자 색 글자(--brand-text, 흰 바탕 4.5:1 이상)이고 빈 별은 보조 글색이다.
+@use "../tokens" as *;
+@use "../tools" as *;
+
+.stars {
+  display: inline-flex;
+  font-size: font-size("lg");
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.stars-on {
+  color: var(--brand-text);
+}
+
+.stars-off {
+  color: var(--ink-3);
+}
+
+// 위젯 대화 끝의 카드. 흰 판·연한 테두리·4px 모서리(D44), 가운데 정렬.
+.rating-card {
+  display: grid;
+  justify-items: center;
+  gap: space(2);
+  margin: space(4) 0 space(2);
+  padding: space(5) space(4);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--panel);
+  text-align: center;
+
+  .btn {
+    min-height: var(--tap);
+  }
+}
+
+.rating-title {
+  margin: 0;
+  font-size: font-size("md");
+  font-weight: weight("bold");
+}
+
+.rating-lead,
+.rating-note {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: font-size("xs");
+}
+
+.rating-form {
+  display: grid;
+  justify-items: stretch;
+  gap: space(2);
+  width: 100%;
+}
+
+.rating-stars {
+  display: flex;
+  justify-content: center;
+  gap: space(1);
+}
+
+// 별 단추 하나. 누르는 칸은 44px(정책 623), 글자는 큰 별 하나다.
+.rating-star {
+  @include button-reset;
+  @include tap-target;
+
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--r);
+  color: var(--ink-3);
+  font-size: font-size("3xl");
+  line-height: 1;
+
+  &[aria-checked="true"],
+  &:has(~ [aria-checked="true"]) {
+    color: var(--brand-text);
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.rating-word {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: font-size("sm");
+  font-weight: weight("semibold");
+}
+
+.rating-given {
+  display: inline-flex;
+  align-items: center;
+  gap: space(2);
+}
+
+.rating-comment {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: font-size("sm");
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+// 데스크 대화 옆 칸의 평가 요약.
+.rating-summary {
+  display: grid;
+  gap: space(1.5);
+
+  p {
+    margin: 0;
+  }
+}
+
+.rating-summary-score {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(2);
+}
+
+.rating-summary-comment {
+  color: var(--ink);
+  font-size: font-size("sm");
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}

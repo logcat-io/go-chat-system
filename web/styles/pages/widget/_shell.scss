@@ -1,0 +1,327 @@
+// 위젯 틀: 데모 페이지, 런처, 메신저 판, 머리, 화면 칸, 아래 탭.
+// 머리는 흰 바탕에 관리자 색 로고와 진한 이름, 오른쪽 닫기다(D44 — 정책 503 을 바꿨다).
+@use "../../tokens" as *;
+@use "../../tools" as *;
+
+body.widget {
+  :focus-visible {
+    outline: 2px solid var(--brand-text);
+    outline-offset: 2px;
+  }
+
+  // 흰 바탕 위에 관리자 색으로 쓰는 글자는 --brand-text 다(밝은 관리자 색이면 applyBrand 가 낮춘다).
+  a {
+    color: var(--brand-text);
+  }
+
+  // 직접 열었을 때만 보이는 호스트 페이지 흉내
+  .w-demo {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: space(12) space(6);
+
+    h1 {
+      margin: 0 0 space(2);
+      font-size: font-size("xl");
+    }
+  }
+
+  // ── 런처: 관리자 색 원 안의 평면 말풍선 ──
+  .launcher {
+    position: fixed;
+    right: space(5);
+    bottom: space(5);
+    z-index: z("launcher");
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    border-radius: var(--r-circle);
+    background: var(--brand);
+    box-shadow: var(--shadow-launcher);
+    color: var(--brand-ink);
+    transition:
+      transform var(--t-view) var(--ease),
+      opacity var(--t-base);
+
+    &::before {
+      @include glyph("chat", 28px);
+    }
+
+    &.hide {
+      opacity: 0;
+      transform: scale(0.6);
+      pointer-events: none;
+    }
+
+    &:active {
+      transform: scale(0.96);
+    }
+
+    .badge {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      min-width: 21px;
+      height: 21px;
+      border: 2px solid var(--on-color);
+    }
+  }
+
+  @media (hover: hover) {
+    .launcher:hover {
+      transform: scale(1.04);
+    }
+  }
+
+  // 임베드 iframe 은 런처보다 조금 큰 76px 칸이다. 그림자가 칸 밖으로 잘리지 않게 줄인다.
+  &.embed .launcher {
+    right: space(2.5);
+    bottom: space(2.5);
+    box-shadow: var(--shadow-launcher-embed);
+  }
+
+  &.pos-left .launcher {
+    right: auto;
+    left: space(5);
+  }
+
+  &.embed.pos-left .launcher {
+    left: space(2.5);
+  }
+
+  // ── 메신저 판 ──
+  .messenger {
+    position: fixed;
+    right: space(5);
+    bottom: 88px;
+    z-index: z("messenger");
+    display: flex;
+    flex-direction: column;
+    width: 380px;
+
+    // 화면 위아래에 런처 자리(88px)와 위 여백(32px)을 남긴다 — 간격 단계가 아니라 런처 크기에서 나온 값이다
+    // stylelint-disable-next-line declaration-property-value-disallowed-list
+    height: min(680px, calc(100vh - 120px));
+    overflow: hidden;
+    border-radius: var(--r);
+    background: var(--panel);
+    box-shadow: var(--w-float);
+    transform-origin: bottom right;
+    transition:
+      transform 220ms var(--ease),
+      opacity var(--t-base);
+
+    &.closed {
+      opacity: 0;
+      transform: translateY(16px) scale(0.96);
+      pointer-events: none;
+    }
+  }
+
+  &.pos-left .messenger {
+    right: auto;
+    left: space(5);
+    transform-origin: bottom left;
+  }
+
+  // 임베드: iframe 가장자리에서 12px 띄워 떠 있는 판으로 보인다. iframe 배경은 투명하다.
+  // 그림자가 iframe 밖으로 나가면 잘린 모서리가 사각형으로 보인다. 12px 여백 안에 들어가게 짧게 둔다.
+  &.embed .messenger {
+    right: space(3);
+    bottom: space(3);
+    width: calc(100% - #{space(6)});
+    height: calc(100% - #{space(6)});
+    box-shadow: var(--shadow-embed);
+  }
+
+  &.embed.pos-left .messenger {
+    right: auto;
+    left: space(3);
+  }
+
+  // ── 머리: 흰 바탕, 관리자 색 로고, 굵고 큰 이름, 오른쪽 닫기 ──
+  // 홈과 대화는 같은 모양이다(대화는 왼쪽에 뒤로가기가 더 붙는다). 대화 목록·자주 묻는 질문은 로고 없이 화면 이름만 쓴다.
+  .m-head {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: space(2);
+    min-height: var(--w-head-h);
+    padding: space(2) space(2) space(2) space(4);
+    background: var(--panel);
+    box-shadow: var(--shadow-head);
+    color: var(--ink);
+
+    h1 {
+      font-size: font-size("xl");
+      font-weight: weight("extrabold");
+      letter-spacing: var(--tracking-tight);
+    }
+
+    .sub {
+      color: var(--ink-3);
+      font-size: font-size("xs");
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    .icon-btn {
+      flex: none;
+      width: var(--w-tap);
+      height: var(--w-tap);
+      border-radius: var(--r-circle);
+      color: var(--ink);
+
+      svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      &:hover,
+      &:active {
+        background: var(--line-2);
+      }
+    }
+
+    #back {
+      margin-left: -(space(2));
+    }
+
+    // 연결 상태는 작게 둔다 — 연결돼 있으면 초록 점 하나만 보이고 글자는 화면 읽기에만 남는다. 연결 중·끊김은 글자도 보인다.
+    .status {
+      gap: space(1);
+      color: var(--ink-3);
+      font-size: font-size("2xs");
+
+      .dot {
+        width: 6px;
+        height: 6px;
+      }
+
+      &[data-state="online"] #statusText {
+        @include visually-hidden;
+      }
+    }
+  }
+
+  .messenger[data-view="list"],
+  .messenger[data-view="faq"] {
+    .w-head-avatar {
+      display: none;
+    }
+
+    .m-head h1 {
+      font-size: font-size("lg");
+      font-weight: weight("bold");
+    }
+  }
+
+  .w-head-text {
+    min-width: 0;
+
+    h1,
+    .sub {
+      @include truncate;
+    }
+  }
+
+  // 로고 자리: 관리자 색 칸 안에 --brand-ink 말풍선. 3D 헤드폰(img)은 쓰지 않는다.
+  .w-head-avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: var(--r);
+    background: var(--brand);
+    color: var(--brand-ink);
+
+    &::before {
+      @include glyph("chat", 20px);
+    }
+
+    img {
+      display: none;
+    }
+  }
+
+  // ── 화면 칸 ──
+  .m-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--bg);
+  }
+
+  .m-view {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .m-view:not([hidden]) {
+    animation: w-view-in var(--t-view) var(--ease) both;
+  }
+
+  #viewChat {
+    background: var(--panel);
+  }
+
+  // ── 아래 탭 ──
+  .m-nav {
+    display: flex;
+    flex: none;
+    gap: space(1.5);
+    padding: space(1) space(2.5) calc(#{space(1)} + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line-2);
+    background: var(--panel);
+
+    button {
+      position: relative;
+      display: grid;
+      flex: 1;
+      justify-items: center;
+      gap: space(0.5);
+      min-height: 52px;
+      padding: space(1.5) 0;
+      border-radius: var(--r);
+      color: var(--ink-3);
+      font-size: font-size("xs");
+      font-weight: weight("semibold");
+      transition: color var(--t-fast);
+
+      &[aria-current="true"] {
+        color: var(--brand-text);
+        font-weight: weight("bold");
+      }
+    }
+
+    .badge {
+      position: absolute;
+      top: space(1);
+
+      // 탭 글리프(가운데 정렬)의 오른쪽 위에 겹친다 — 가운데에서 글리프 폭만큼 오른쪽이다
+      // stylelint-disable-next-line declaration-property-value-disallowed-list
+      right: calc(50% - 22px);
+    }
+  }
+}
+
+@keyframes w-view-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

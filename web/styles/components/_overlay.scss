@@ -1,0 +1,247 @@
+// 떠 있는 것: 토스트, 모달, 드롭다운 메뉴, 툴팁, 사진 크게 보기. 그림자는 여기에만 쓴다.
+@use "../tokens" as *;
+@use "../tools" as *;
+
+.toasts {
+  position: fixed;
+  bottom: space(5);
+  left: 50%;
+  z-index: z("toast");
+  display: grid;
+  gap: space(2);
+  width: max-content;
+  max-width: calc(100vw - #{space(8)});
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: space(2.5);
+  max-width: 420px;
+  padding: space(2.5) space(3.5);
+  border-radius: var(--r);
+  background: var(--toast);
+  box-shadow: var(--shadow-lg);
+  color: var(--on-color);
+  font-size: font-size("sm");
+  pointer-events: auto;
+  animation: toast-in var(--t-base) var(--ease);
+
+  > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &.danger {
+    background: var(--danger);
+  }
+
+  &.ok {
+    background: var(--ok-ink);
+  }
+
+  button {
+    flex: none;
+    color: var(--on-color);
+    opacity: 0.7;
+  }
+
+  // 문의 번호(D47). 문구 뒤에 작게 붙인다. 고객이 읽어 줄 수 있게 고정폭 숫자로 둔다.
+  .toast-trace {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    opacity: 0.85;
+  }
+
+  // 보내지 못한 글·문의 번호를 복사하는 단추와 지운 것을 되돌리는 단추. 닫기(×)보다 눈에 띄게 둔다.
+  .toast-action,
+  .toast-copy,
+  .toast-trace-copy {
+    font-weight: weight("semibold");
+    text-decoration: underline;
+    white-space: nowrap;
+    opacity: 1;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: z("scrim");
+  display: grid;
+  place-items: center;
+  padding: space(4);
+  background: var(--scrim);
+  animation: fade-in var(--t-fast);
+}
+
+.modal {
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100% - #{space(4)});
+  padding: space(5);
+  overflow-y: auto;
+  border-radius: var(--r);
+  background: var(--panel);
+  box-shadow: var(--shadow-lg);
+  animation: pop-in var(--t-base) var(--ease);
+
+  h2 {
+    margin: 0 0 space(1.5);
+    font-size: font-size("lead");
+    overflow-wrap: anywhere;
+  }
+
+  p {
+    margin: 0 0 space(4);
+    color: var(--ink-2);
+    font-size: font-size("sm");
+    overflow-wrap: anywhere;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: space(2);
+    margin-top: space(4);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.menu-wrap {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + #{space(1.5)});
+  right: 0;
+  z-index: z("dropdown");
+  min-width: 180px;
+  max-width: min(320px, calc(100vw - #{space(6)}));
+  padding: space(1.5);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--panel);
+  box-shadow: var(--shadow-md);
+  animation: pop-in var(--t-fast) var(--ease);
+
+  &.left {
+    right: auto;
+    left: 0;
+  }
+
+  button,
+  a {
+    display: flex;
+    align-items: center;
+    gap: space(2);
+    width: 100%;
+    padding: space(2) space(2.5);
+    border-radius: var(--r-xs);
+    color: var(--ink);
+    font-size: font-size("sm");
+    text-align: left;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+
+    &:hover {
+      background: var(--line-2);
+    }
+  }
+
+  button.danger {
+    color: var(--danger);
+  }
+
+  button[aria-checked="true"]::after {
+    margin-left: auto;
+    color: var(--brand-text);
+    content: "✓";
+  }
+
+  hr {
+    margin: space(1.5) 0;
+    border: 0;
+    border-top: 1px solid var(--line-2);
+  }
+
+  .label {
+    padding: space(1.5) space(2.5) space(0.5);
+    color: var(--ink-3);
+    font-size: font-size("2xs");
+    letter-spacing: 0.04em;
+  }
+}
+
+[data-tip] {
+  position: relative;
+
+  &:hover::after {
+    position: absolute;
+    bottom: calc(100% + #{space(1.5)});
+    left: 50%;
+    z-index: z("raised") + 15;
+    padding: space(1) space(2);
+    border-radius: var(--r-xs);
+    background: var(--ink);
+    color: var(--panel); // 진한 글자색 바탕 위의 바탕색 글자 — 어두운 테마에서도 뒤집혀 읽힌다
+    content: attr(data-tip);
+    font-size: font-size("2xs");
+    white-space: nowrap;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: z("lightbox");
+  display: grid;
+  place-items: center;
+  background: var(--scrim-strong);
+  cursor: zoom-out;
+  animation: fade-in var(--t-fast);
+
+  img {
+    max-width: 92vw;
+    max-height: 92vh;
+    border-radius: var(--r);
+  }
+}

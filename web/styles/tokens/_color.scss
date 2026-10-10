@@ -1,0 +1,71 @@
+// 색 토큰(D41·D44). 따뜻한 미색 바탕·먹색 글자·갈색 강조 팔레트다. 대비 수치는 ui.test.mjs 가 컴파일된 app.css 의 :root 를 읽어 지킨다.
+// 화면 코드는 Sass 변수가 아니라 CSS 변수(var(--…))로 색을 쓴다 — 관리자 색은 실행 중에 ui.js 의 applyBrand 가
+// html 에 --brand 다섯 개를 덮어쓰고, 위젯의 어두운 테마도 같은 이름을 다시 정한다.
+
+// 관리자 색. --brand-strong 은 applyBrand 가 #6e6047 에서 만드는 값과 같다(흰 글자, 18% 낮춤). 흰 글자 대비 6.13:1.
+$brand: (
+  "brand": #6e6047,
+  "brand-strong": #5a4f3a,
+  "brand-soft": #f2e9d6, // 연한 모래색. 그 위의 --brand 글자 5.08:1
+  "brand-ink": #ffffff, // 관리자 색 위의 글자·아이콘
+  "brand-text": #6e6047, // 흰 바탕 위 관리자 색 글자·아이콘. applyBrand 가 흰 바탕 4.5:1 이 되게 낮춘 값을 쓴다
+);
+
+// 바탕·글자·선. 보조 글은 #696c76(흰 바탕 5.24:1, --line-2 위 4.52:1). #808080 은 3.95:1 이라 글자에 쓰지 않는다.
+$neutral: (
+  "bg": #f8f7f4, // 미색 바탕
+  "panel": #ffffff,
+  "ink": #17181d, // 흰 바탕 17.72:1
+  "ink-2": #4e5460, // 7.61:1
+  "ink-3": #696c76, // 보조 글
+  "ink-4": #aaa8a2, // 장식(빈 칸 표시·점)에만 쓴다
+  "line": #e1e0e0, // 먹색 13% 를 흰 바탕에 섞은 값
+  "line-2": #f0eee8, // 진한 미색
+);
+
+// 상태 색. 원색(--ok·--warn)은 흰 바탕 글자로 모자라 점·채움에만 쓰고 글자는 -ink 다.
+$status: (
+  "ok": #04b395,
+  "ok-ink": #027a66, // --ok-soft 위 4.78:1
+  "ok-soft": #e8f7f3,
+  "warn": #fbbb3d,
+  "warn-ink": #8a5a00, // --warn-soft 위 5.51:1
+  "warn-soft": #fff6e2,
+  "danger": #cf2a30, // 흰 바탕 5.21:1, 흰 글자 5.21:1
+  "danger-soft": #fff1f1, // 그 위 --danger 4.74:1
+  "memo": #fff9db,
+  "memo-line": #ffe066,
+  "memo-ink": #5c4600,
+  "mark": #e8dcc0, // 검색 결과 강조(모래색)
+  "toast": #151310, // 가장 진한 먹색
+);
+
+// 색 위의 색과 덮개. 컴포넌트는 #hex·rgb() 를 직접 쓰지 않는다 — stylelint 가 토큰 파일 밖의 색 글자를 막는다.
+$fixed: (
+  "on-color": #ffffff, // 진한 색 바탕(아바타·알림 수 배지·토스트·칩) 위의 흰 글자. 어두운 테마에서도 흰색이다
+  "media-bg": #000000, // 영상 칸의 남는 자리
+  "scrim": rgb(21 19 16 / 45%), // 모달 뒤를 덮는 막
+  "scrim-strong": rgb(0 0 0 / 85%), // 사진 크게 보기 뒤
+  "shimmer": rgb(255 255 255 / 70%), // 불러오는 중 뼈대의 흐르는 빛
+);
+
+// 아바타 이니셜 바탕 여덟 색. 흰 이니셜 대비 5:1 이상이다. ui.js 의 AVATAR_COLORS 와 순서까지 같다(ui.test.mjs 가 본다).
+$avatar-tones: (#3b5bdb, #c2410c, #087f5b, #9c36b5, #c2255c, #0b7285, #8a5a00, #6741d9);
+
+// 위젯 어두운 테마(D38). 운영체제 설정을 따르고 body.widget 안에서만 바꾼다.
+$dark: (
+  "bg": #151310,
+  "panel": #201d18,
+  "ink": #f1eee8,
+  "ink-2": #c6c1b7,
+  "ink-3": #a6a095, // --panel 위 6.47:1
+  "ink-4": #665f54,
+  "line": #3a352c,
+  "line-2": #2a261f,
+  "danger-soft": rgb(240 82 82 / 16%),
+  "ok-soft": rgb(4 179 149 / 16%),
+  "ok-ink": #63e6be,
+  "warn-soft": rgb(251 187 61 / 16%),
+  "warn-ink": #ffc078,
+  "toast": #3a352c,
+);

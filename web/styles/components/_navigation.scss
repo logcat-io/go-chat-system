@@ -1,0 +1,188 @@
+// 탭, 세그먼트, 아코디언, 알약 단추, 표.
+@use "../tokens" as *;
+@use "../tools" as *;
+
+.tabs {
+  display: flex;
+  gap: space(0.5);
+  border-bottom: 1px solid var(--line);
+
+  button {
+    // 선택한 탭의 밑줄이 목록의 1px 경계선 위에 겹친다 — 간격이 아니라 테두리 두께다
+    // stylelint-disable-next-line declaration-property-value-disallowed-list
+    margin-bottom: -1px;
+    padding: space(2.5) space(3.5);
+    border-bottom: 2px solid transparent;
+    color: var(--ink-3);
+    font-size: font-size("sm");
+    font-weight: weight("semibold");
+
+    &[aria-selected="true"] {
+      border-bottom-color: var(--brand);
+      color: var(--brand-text);
+    }
+
+    &:focus-visible {
+      outline-offset: -2px;
+    }
+
+    &:hover {
+      color: var(--ink);
+    }
+  }
+}
+
+.segment {
+  display: inline-flex;
+  gap: space(0.5);
+  padding: space(1);
+  border-radius: var(--r);
+  background: var(--line-2);
+
+  button {
+    padding: space(1.5) space(2.5);
+    border-radius: var(--r-xs);
+    color: var(--ink-3);
+    font-size: font-size("xs");
+    font-weight: weight("semibold");
+
+    &[aria-pressed="true"] {
+      background: var(--panel);
+      box-shadow: var(--shadow-sm);
+      color: var(--ink);
+    }
+  }
+}
+
+// 알약 단추: 흰 바탕·회색 테두리·진한 글자(위젯 홈의 질문 알약). 긴 글은 한 줄로 자른다.
+.pill {
+  @include button-reset;
+
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: var(--tap);
+  padding: space(2.5) space(4.5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--panel);
+  color: var(--ink);
+  font-size: font-size("base");
+  font-weight: weight("medium");
+  line-height: leading("tight");
+  text-align: left;
+  transition:
+    border-color var(--t-fast),
+    color var(--t-fast);
+
+  > span {
+    @include truncate;
+  }
+
+  @include hover {
+    border-color: var(--brand-text);
+  }
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(2);
+}
+
+// 아코디언: 질문 왼쪽 정렬·일정한 높이·구분선·열림 표시(꺾쇠). 단추는 aria-expanded 로 열림을 알린다.
+.accordion {
+  border-top: 1px solid var(--line);
+}
+
+.accordion-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.accordion-trigger {
+  @include button-reset;
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: space(3);
+  width: 100%;
+  min-height: 56px;
+  padding: space(3) space(1);
+  text-align: left;
+
+  .accordion-mark {
+    color: var(--brand-text);
+    font-size: font-size("md");
+    font-weight: weight("bold");
+  }
+
+  .accordion-title {
+    color: var(--ink);
+    font-size: font-size("md");
+    font-weight: weight("semibold");
+    line-height: leading("base");
+    overflow-wrap: anywhere;
+  }
+
+  &::after {
+    @include glyph("chevron-down", 18px, var(--ink-3));
+
+    transition: transform var(--t-fast);
+  }
+
+  &[aria-expanded="true"]::after {
+    transform: rotate(180deg);
+  }
+
+  &[aria-expanded="true"] .accordion-title {
+    font-weight: weight("bold");
+  }
+
+  &:focus-visible {
+    outline-offset: -2px;
+  }
+}
+
+.accordion-panel {
+  margin: 0 0 space(4);
+  padding: space(4);
+  border-radius: var(--r);
+  background: var(--bg);
+  color: var(--ink-2);
+  font-size: font-size("base");
+  line-height: leading("relaxed");
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: font-size("sm");
+
+  th {
+    padding: space(1.5) space(2);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-3);
+    font-size: font-size("2xs");
+    letter-spacing: 0.04em;
+    text-align: left;
+  }
+
+  td {
+    padding: space(2.5) space(2);
+    border-bottom: 1px solid var(--line-2);
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+}

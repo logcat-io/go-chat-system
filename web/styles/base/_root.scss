@@ -1,0 +1,36 @@
+// 토큰을 CSS 변수로 내보낸다. 컴포넌트는 색·모서리·그림자·움직임을 이 변수로만 쓴다.
+// ui.test.mjs 가 컴파일된 app.css 의 :root 에서 색 값(#rrggbb)을 읽어 대비를 잰다 — 색은 여섯 자리 소문자로 쓴다.
+@use "sass:map";
+@use "../tokens" as *;
+
+:root {
+  @each $name, $value in map.merge(map.merge(map.merge($brand, $neutral), $status), $fixed) {
+    --#{$name}: #{$value};
+  }
+
+  // 모서리(D44): 기준 4px, 작은 것 2px. 알약·원만 예외다.
+  --r-xs: #{map.get($radius, "xs")};
+  --r: #{map.get($radius, "base")};
+  --r-pill: #{map.get($radius, "pill")};
+  --r-circle: #{map.get($radius, "circle")};
+
+  @each $name, $value in $shadow {
+    --shadow-#{$name}: #{$value};
+  }
+
+  --ease: #{map.get($motion, "ease")};
+  --t-fast: #{map.get($motion, "fast")};
+  --t-base: #{map.get($motion, "base")};
+  --t-view: #{map.get($motion, "view")};
+  --tap: #{$tap};
+
+  // 본문 Pretendard 는 설치된 기기에서만 쓴다(base/_fonts.scss). 제목은 Sora(라틴 글자·숫자, 이 서버가 준다) 뒤에 본문 글꼴이다.
+  --sans: "Pretendard Variable", Pretendard, "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif;
+  --display: "Sora", var(--sans);
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --tracking-tight: -0.03em; // 제목 글자 간격
+
+  @each $name, $_ in $glyphs {
+    --glyph-#{$name}: #{glyph-url($name)};
+  }
+}

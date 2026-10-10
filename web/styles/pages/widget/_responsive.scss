@@ -1,0 +1,75 @@
+// 휴대폰 폭(전체 화면)과 움직임 최소화.
+@use "../../tokens" as *;
+@use "../../tools" as *;
+
+// 직접 연 /widget 은 폭 480px 이하에서 전체 화면이다. 임베드 iframe 은 데스크톱에서도 400px 폭이라 폭 조건이 늘 맞는다 —
+// 임베드는 widget.js 가 붙이는 w-phone 으로 가른다(정책 504).
+@include below("phone") {
+  body.widget:not(.embed) {
+    .messenger {
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .m-head {
+      padding-top: calc(#{space(2)} + env(safe-area-inset-top));
+    }
+
+    .composer textarea {
+      font-size: font-size("lead"); // iOS 가 16px 미만 입력 칸에서 화면을 확대한다
+    }
+
+    .launcher {
+      right: space(3.5);
+      bottom: space(3.5);
+    }
+  }
+}
+
+body.widget.embed.w-phone {
+  .messenger {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .m-head {
+    padding-top: calc(#{space(2)} + env(safe-area-inset-top));
+  }
+
+  .composer textarea {
+    font-size: font-size("lead");
+  }
+}
+
+// app.css 가 이미 모든 transition·animation 을 끈다. 여기서는 위젯이 더한 눌림·떠오름 변형도 없앤다.
+@media (prefers-reduced-motion: reduce) {
+  body.widget *,
+  body.widget *::before,
+  body.widget *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  body.widget .launcher:hover,
+  body.widget .launcher:active,
+  body.widget .composer .send:hover,
+  body.widget .composer .send:active,
+  body.widget .messenger.closed {
+    transform: none;
+  }
+
+  body.widget .w-progress:not(.is-known) i {
+    width: 100%;
+    opacity: 0.5;
+  }
+}

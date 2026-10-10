@@ -1,0 +1,106 @@
+// 믹스인. 토큰 다음, 컴포넌트 앞 층이다. CSS 를 직접 내보내지 않는다.
+@use "sass:map";
+@use "../tokens" as *;
+
+// 한 줄로 자르고 말줄임표를 붙인다. 부모가 flex·grid 면 이 요소에 min-width: 0 도 준다.
+@mixin truncate {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 여러 줄을 n 줄로 자른다.
+@mixin line-clamp($lines) {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $lines;
+}
+
+// 평면 글리프를 ::before 로 그린다. 색은 $color(보통 currentColor 나 관리자 색 변수)다.
+@mixin glyph($name, $size, $color: currentcolor) {
+  content: "";
+  flex: none;
+  width: $size;
+  height: $size;
+  background: $color;
+  -webkit-mask: var(--glyph-#{$name}) center / contain no-repeat; // iOS 15.4 이전
+  mask: var(--glyph-#{$name}) center / contain no-repeat;
+}
+
+// 마우스를 올릴 수 있는 기기에서만 hover 를 준다. 휴대폰에서 누른 뒤 hover 가 남지 않는다.
+@mixin hover {
+  @media (hover: hover) {
+    &:hover {
+      @content;
+    }
+  }
+}
+
+// 폭 기준점 아래(max-width)에서만.
+@mixin below($name) {
+  @media (max-width: map.get($breakpoints, $name)) {
+    @content;
+  }
+}
+
+@mixin focus-ring($color: var(--brand-text)) {
+  outline: 2px solid $color;
+  outline-offset: 2px;
+}
+
+// 손가락으로 누르는 칸. 보이는 크기와 상관없이 가로세로 44px 이상(정책 623).
+@mixin tap-target {
+  min-width: var(--tap);
+  min-height: var(--tap);
+}
+
+// 글자와 테두리를 지운 단추. 컴포넌트가 모양을 새로 정할 때 쓴다.
+@mixin button-reset {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+// 화면에 보이지 않고 스크린 리더만 읽는다.
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// 데스크 서랍 하나의 모양($side: left·right). 위 막대 아래에서 옆으로 밀려 나온다. 연 모양은 drawer-open 이다.
+// 닫혀 있으면 visibility 로 감춰 Tab 이 닿지 않는다. 닫을 때는 미끄러진 뒤에 감추고(지연), 열 때는 곧바로 보인다 —
+// 열자마자 서랍 첫 항목으로 초점을 옮길 수 있어야 한다(감춘 요소에는 초점이 가지 않는다).
+@mixin drawer($side, $width) {
+  position: fixed;
+  top: $desk-topbar;
+  bottom: 0;
+  #{$side}: 0;
+  z-index: z("drawer");
+  width: min(#{$width}, 85vw);
+  visibility: hidden;
+  box-shadow: var(--shadow-lg);
+  transition:
+    transform var(--t-base) var(--ease),
+    visibility 0s linear var(--t-base);
+
+  @if $side == left {
+    transform: translateX(-100%);
+  } @else {
+    transform: translateX(100%);
+  }
+}
+
+@mixin drawer-open {
+  visibility: visible;
+  transform: none;
+  transition: transform var(--t-base) var(--ease);
+}

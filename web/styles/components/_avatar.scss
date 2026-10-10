@@ -1,0 +1,40 @@
+// 아바타: 이니셜 원. 바탕은 이름에서 고른 색(.tone-0~7, ui.js 의 avatarTone)이다 — 인라인 색을 쓰지 않는다.
+@use "sass:list";
+@use "../tokens" as *;
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-circle);
+  background: var(--ink-3);
+  color: var(--on-color);
+  font-size: font-size("xs");
+  font-weight: weight("bold");
+
+  &.lg {
+    width: 48px;
+    height: 48px;
+    font-size: font-size("lead");
+  }
+
+  &.sm {
+    width: 24px;
+    height: 24px;
+    font-size: font-size("3xs");
+  }
+
+  @for $i from 1 through list.length($avatar-tones) {
+    &.tone-#{$i - 1} {
+      background: list.nth($avatar-tones, $i);
+    }
+  }
+
+  // 자동 메시지 아바타: 연한 관리자 색 바탕에 관리자 색 글자.
+  &.bot {
+    background: var(--brand-soft);
+    color: var(--brand-text);
+  }
+}

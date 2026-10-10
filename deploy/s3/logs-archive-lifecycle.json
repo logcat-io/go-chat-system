@@ -1,0 +1,12 @@
+{
+  "Rules": [
+    {
+      "ID": "expire-365d",
+      "Status": "Enabled",
+      "Filter": {},
+      "Expiration": { "Days": 365 },
+      "NoncurrentVersionExpiration": { "NoncurrentDays": 1 },
+      "AbortIncompleteMultipartUpload": { "DaysAfterInitiation": 1 }
+    }
+  ]
+}

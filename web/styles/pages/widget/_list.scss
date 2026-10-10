@@ -1,0 +1,107 @@
+// 상담 카드(최근 문의·대화 목록) — 관리자 색 "채팅" 표시와 절대 시각, 굵은 제목(마지막 글) 두 줄까지,
+// 상태 배지(진행중·종료). 상담 제목이 있으면 그것이 제목이고 마지막 글은 회색 보조 줄 한 줄이다(정책 656).
+@use "../../tokens" as *;
+@use "../../tools" as *;
+
+body.widget {
+  .w-conv-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: space(2);
+  }
+
+  .conv-item {
+    display: grid;
+    gap: space(2);
+    width: 100%;
+    min-height: 64px;
+    padding: space(4) space(5);
+    border: 1px solid var(--w-edge);
+    border-radius: var(--r);
+    background: var(--panel);
+    text-align: left;
+    transition: border-color var(--t-fast);
+
+    &:active {
+      border-color: var(--line);
+    }
+
+    .title {
+      @include line-clamp(2);
+
+      font-size: font-size("md");
+      font-weight: weight("bold");
+      letter-spacing: var(--tracking-tight);
+      line-height: leading("base");
+      overflow-wrap: anywhere;
+    }
+
+    .when {
+      color: var(--ink-3);
+      font-size: font-size("xs");
+      white-space: nowrap;
+    }
+
+    .badge {
+      margin-left: auto;
+    }
+  }
+
+  @media (hover: hover) {
+    .conv-item:hover {
+      border-color: var(--line);
+    }
+  }
+
+  .w-conv-top {
+    display: flex;
+    align-items: center;
+    gap: space(2);
+    min-width: 0;
+  }
+
+  .w-conv-kind {
+    color: var(--brand-text);
+    font-size: font-size("xs");
+    font-weight: weight("bold");
+  }
+
+  .w-conv-sub {
+    @include truncate;
+
+    margin-top: -(space(1));
+    color: var(--ink-3);
+    font-size: font-size("sm");
+  }
+
+  .w-conv-state {
+    display: flex;
+    margin-top: space(1);
+  }
+
+  // 대화 목록 화면
+  .w-list {
+    padding: space(4);
+    overflow-y: auto;
+  }
+
+  .empty {
+    padding: space(14) space(6);
+
+    .glyph {
+      margin-bottom: space(1.5);
+      opacity: 1;
+
+      img {
+        display: block;
+      }
+    }
+
+    strong {
+      color: var(--ink);
+      font-size: font-size("lead");
+      font-weight: weight("bold");
+      letter-spacing: var(--tracking-tight);
+    }
+  }
+}

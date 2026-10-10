@@ -1,0 +1,143 @@
+// 크기 토큰: 간격·글자·모서리·그림자·쌓임 순서·움직임.
+// 간격과 글자 크기는 빌드 때 정해지는 값이라 Sass 함수(space(), font-size())로 쓴다.
+// 모서리·그림자·움직임은 위젯이 다시 정할 수 있게 CSS 변수로도 내보낸다(_root.scss).
+@use "sass:map";
+
+// 간격: 4px 단위에 반 단계(2px)를 둔다 — 0.5·1.5·2.5·3.5·4.5. 컴포넌트는 space(n) 하나만 쓰고 space(n) ± Npx 로 비켜 가지 않는다
+// (stylelint 의 declaration-property-value-disallowed-list 가 막는다). 칸이 모자라면 여기에 단계를 더한다.
+$space: (
+  0: 0,
+  0.5: 2px,
+  1: 4px,
+  1.5: 6px,
+  2: 8px,
+  2.5: 10px,
+  3: 12px,
+  3.5: 14px,
+  4: 16px,
+  4.5: 18px,
+  5: 20px,
+  6: 24px,
+  7: 28px,
+  8: 32px,
+  10: 40px,
+  12: 48px,
+  14: 56px,
+);
+
+// 모서리(D44): 4px 이 기준이다. 작은 것(체크·진행 막대·인라인 코드)은 2px.
+// 알약(pill)과 원(circle)만 예외다 — 알약 버튼·칩·배지, 아바타·원형 아이콘 단추.
+$radius: (
+  "xs": 2px,
+  "base": 4px,
+  "pill": 999px,
+  "circle": 50%,
+);
+
+// 글자 크기. 본문 14px, 위젯 말풍선 15px, 큰 본문·입력칸 16px(iOS 가 16px 미만 입력칸에서 화면을 확대한다), 제목 17·20·24px.
+// 컴포넌트는 font-size() 로만 쓴다. 숫자(px)를 직접 쓰면 stylelint 가 막는다 — 크기가 모자라면 여기에 단계를 더한다.
+$font-size: (
+  "3xs": 10px, // 작은 아바타 이니셜·펼침 꺾쇠
+  "2xs": 11px,
+  "xs": 12px,
+  "sm": 13px,
+  "base": 14px,
+  "md": 15px,
+  "lead": 16px,
+  "lg": 17px,
+  "xl": 20px,
+  "2xl": 24px,
+  "3xl": 28px, // 빈 상태 글리프
+);
+$font-weight: (
+  "regular": 400,
+  "medium": 500,
+  "semibold": 600,
+  "bold": 700,
+  "extrabold": 800, // 위젯 머리의 이름(로고 글자)
+);
+$line-height: (
+  "tight": 1.3,
+  "base": 1.5,
+  "relaxed": 1.65,
+);
+
+// 그림자는 떠 있는 판(메신저·모달·메뉴·토스트)에만 쓴다. 카드와 목록은 연한 테두리로 나눈다(D41).
+$shadow: (
+  "sm": 0 1px 2px rgb(21 19 16 / 5%),
+  "md": 0 4px 16px rgb(21 19 16 / 8%),
+  "lg": 0 12px 40px rgb(21 19 16 / 16%),
+  "head": 0 2px 10px rgb(21 19 16 / 6%),
+  "launcher": 0 6px 16px -6px rgb(21 19 16 / 45%), // 위젯 런처(관리자 색 원)
+  "launcher-embed": 0 3px 8px -3px rgb(21 19 16 / 45%), // 임베드 iframe 76px 칸 안에서 잘리지 않는 짧은 것
+  "embed": (0 0 0 1px rgb(21 19 16 / 6%), 0 1px 3px rgb(21 19 16 / 10%), 0 6px 10px -4px rgb(21 19 16 / 20%)), // 임베드 메신저 판(12px 여백 안)
+);
+
+// 쌓임 순서. 아래에서 위로.
+$z: (
+  "raised": 5,
+  "drawer-scrim": 26, // 데스크 좁은 화면의 서랍과 그 뒤 막. 위 막대의 메뉴·검색 결과(dropdown)와 모달(scrim)이 그 위에 뜬다
+  "drawer": 28,
+  "dropdown": 30,
+  "launcher": 20,
+  "messenger": 21,
+  "scrim": 40,
+  "toast": 50,
+  "lightbox": 60,
+);
+$motion: (
+  "ease": cubic-bezier(0.2, 0.8, 0.2, 1),
+  "fast": 120ms,
+  "base": 180ms,
+  "view": 200ms,
+);
+
+// 화면 폭 기준점. 위젯 휴대폰(전체 화면)과 데스크의 단 수가 바뀌는 곳.
+$breakpoints: (
+  "narrow": 360px, // 위젯 머리에 로고·이름·상담 종료·닫기가 다 들어가지 않는 폭(320px 휴대폰)
+  "phone": 480px,
+  "tablet": 900px,
+  "desk-3col": 1280px,
+);
+
+// 데스크 위 막대의 높이. 서랍은 그 아래에서 열린다(위 막대의 ☰ 가 그대로 보여 닫기 단추가 된다).
+$desk-topbar: 52px;
+
+// 데스크 서랍의 폭. 왼쪽 메뉴는 필터 칸과 비슷하고, 고객 정보는 4단일 때의 칸 폭이다. 휴대폰에서는 화면의 85% 를 넘지 않는다.
+$drawer-nav: 280px;
+$drawer-profile: 320px;
+
+// 손가락으로 누르는 칸의 최소 크기(정책 623).
+$tap: 44px;
+
+@function space($n) {
+  @if not map.has-key($space, $n) {
+    @error "간격 토큰이 없다: #{$n}";
+  }
+
+  @return map.get($space, $n);
+}
+
+@function font-size($name) {
+  @if not map.has-key($font-size, $name) {
+    @error "글자 크기 토큰이 없다: #{$name}";
+  }
+
+  @return map.get($font-size, $name);
+}
+
+@function weight($name) {
+  @return map.get($font-weight, $name);
+}
+
+@function leading($name) {
+  @return map.get($line-height, $name);
+}
+
+@function z($name) {
+  @if not map.has-key($z, $name) {
+    @error "z-index 토큰이 없다: #{$name}";
+  }
+
+  @return map.get($z, $name);
+}

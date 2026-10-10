@@ -1,0 +1,160 @@
+# 복사 위치: .github/workflows/deploy-prod.yml
+# v* 태그를 밀면 CI 를 돌리고, GitHub Environment "prod" 의 승인자가 승인하면 prod 에 배포한다.
+name: Deploy (prod)
+
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # Environment "prod" 에 Required reviewers 를 걸어 둔다. 승인 전에는 이 job 이 시작하지 않는다.
+    environment: prod
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      ENV: prod
+      ECR_REPOSITORY: go-chat-server
+      ECS_CLUSTER: chat-prod
+      ECS_SERVICE: chat-server
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: AWS 자격 증명 (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-northeast-2
+
+      - name: ECR 로그인
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      # dev 에서 이미 돌려 본 커밋이면 같은 이미지를 그대로 쓴다. 없을 때만 빌드한다.
+      # 그다음 같은 이미지에 버전 태그(v1.2.3)를 하나 더 붙인다. 빌드를 다시 하지 않는다.
+      - name: 이미지 준비 (linux/amd64)
+        id: image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          SHA: ${{ github.sha }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          IMAGE="$REGISTRY/$ECR_REPOSITORY:$SHA"
+          if aws ecr describe-images --repository-name "$ECR_REPOSITORY" --image-ids imageTag="$SHA" >/dev/null 2>&1; then
+            echo "dev 에서 만든 이미지를 쓴다: $SHA"
+          else
+            docker buildx build --platform linux/amd64 -t "$IMAGE" --push .
+          fi
+          if ! aws ecr describe-images --repository-name "$ECR_REPOSITORY" --image-ids imageTag="$VERSION" >/dev/null 2>&1; then
+            MANIFEST=$(aws ecr batch-get-image --repository-name "$ECR_REPOSITORY" --image-ids imageTag="$SHA" \
+              --query 'images[0].imageManifest' --output text)
+            aws ecr put-image --repository-name "$ECR_REPOSITORY" --image-tag "$VERSION" --image-manifest "$MANIFEST" >/dev/null
+          fi
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: 태스크 정의 채우기
+        env:
+          ACCOUNT_ID: ${{ vars.ACCOUNT_ID }}
+          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
+          S3_BUCKET: ${{ vars.S3_BUCKET }}
+          SECRET_ARN: ${{ vars.SECRET_ARN }}
+          TASK_CPU: ${{ vars.TASK_CPU }}
+          TASK_MEMORY: ${{ vars.TASK_MEMORY }}
+          SEED_DEMO: ${{ vars.SEED_DEMO }}
+          SEED_AGENT_EMAIL: ${{ vars.SEED_AGENT_EMAIL }}
+          SEED_AGENT_COUNT: ${{ vars.SEED_AGENT_COUNT }}
+          TRACE_SAMPLE_RATIO: ${{ vars.TRACE_SAMPLE_RATIO }}
+          ADOT_VERSION: ${{ vars.ADOT_VERSION }}
+          ENTRY_RATE_PER_MINUTE: ${{ vars.ENTRY_RATE_PER_MINUTE }}
+        run: |
+          envsubst '${ENV} ${ACCOUNT_ID} ${PUBLIC_URL} ${S3_BUCKET} ${SECRET_ARN} ${TASK_CPU} ${TASK_MEMORY} ${SEED_DEMO} ${SEED_AGENT_EMAIL} ${SEED_AGENT_COUNT} ${TRACE_SAMPLE_RATIO} ${ADOT_VERSION} ${ENTRY_RATE_PER_MINUTE}' \
+            < deploy/ecs/task-definition.template.json > task-definition.json
+          if grep -n '\${' task-definition.json; then echo "채우지 못한 변수가 있다"; exit 1; fi
+
+      - name: 앱 이미지 넣기
+        id: render
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: app
+          image: ${{ steps.image.outputs.image }}
+
+      # 태스크 정의는 여기서 한 번만 등록한다. 마이그레이션 태스크와 서비스가 같은 개정(ARN)을 쓴다 — 전에는 run-task 앞에서 한 번,
+      # 배포 액션(amazon-ecs-deploy-task-definition)이 또 한 번 등록해 migrate 를 돈 개정과 서빙하는 개정이 갈렸다(감사 31).
+      - name: 태스크 정의 등록
+        id: taskdef
+        env:
+          TASK_DEF_FILE: ${{ steps.render.outputs.task-definition }}
+        run: |
+          set -euo pipefail
+          TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json "file://$TASK_DEF_FILE" \
+            --query 'taskDefinition.taskDefinitionArn' --output text)
+          echo "태스크 정의: $TASK_DEF_ARN"
+          echo "arn=$TASK_DEF_ARN" >> "$GITHUB_OUTPUT"
+
+      # 마이그레이션은 서비스를 바꾸기 전에 같은 태스크 정의 개정의 1회성 태스크로 돈다(D49, docs/deploy.md 14.1).
+      # 서버 기동은 DB 를 바꾸지 않는다. 종료 코드가 0 이 아니면 여기서 멈추고 서비스는 옛 개정 그대로 서빙한다.
+      - name: 마이그레이션 (1회성 태스크)
+        env:
+          APP_SUBNETS: ${{ vars.APP_SUBNETS }}
+          APP_SG: ${{ vars.APP_SG }}
+          TASK_DEF_ARN: ${{ steps.taskdef.outputs.arn }}
+        run: |
+          set -euo pipefail
+          TASK_ARN=$(aws ecs run-task --cluster "$ECS_CLUSTER" --task-definition "$TASK_DEF_ARN" \
+            --launch-type FARGATE --started-by deploy-migrate \
+            --network-configuration "awsvpcConfiguration={subnets=[$APP_SUBNETS],securityGroups=[$APP_SG],assignPublicIp=DISABLED}" \
+            --overrides '{"containerOverrides":[{"name":"app","command":["/app/server","migrate"]}]}' \
+            --query 'tasks[0].taskArn' --output text)
+          echo "마이그레이션 태스크: $TASK_ARN"
+          aws ecs wait tasks-stopped --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN"
+          EXIT=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$TASK_ARN" \
+            --query 'tasks[0].containers[?name==`app`].exitCode | [0]' --output text)
+          echo "종료 코드: $EXIT"
+          if [ "$EXIT" != "0" ]; then
+            echo "마이그레이션이 실패했다. aws logs tail /chat/$ENV --since 30m | grep -E 'migrate\.|server.exit'"
+            exit 1
+          fi
+
+      # 서비스를 위에서 등록한 같은 개정으로 바꾼다. 서킷 브레이커는 서비스에 켜 둔다 — 새 태스크가 계속 실패하면 ECS 가 이전 개정으로
+      # 되돌리고 이 배포의 rolloutState 가 FAILED 가 된다. `aws ecs wait services-stable` 은 되돌린 뒤의 안정도 성공으로 보므로 쓰지 않고
+      # 이 개정의 배포가 COMPLETED 인지 직접 본다. 15초마다 45분까지.
+      - name: ECS 배포
+        env:
+          TASK_DEF_ARN: ${{ steps.taskdef.outputs.arn }}
+        run: |
+          set -euo pipefail
+          aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --task-definition "$TASK_DEF_ARN" >/dev/null
+          for i in $(seq 1 180); do
+            STATE=$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" \
+              --query "services[0].deployments[?taskDefinition=='$TASK_DEF_ARN'].rolloutState | [0]" --output text)
+            case "$STATE" in
+              COMPLETED) echo "배포 완료: $TASK_DEF_ARN"; exit 0 ;;
+              IN_PROGRESS) sleep 15 ;;
+              *) echo "배포가 끝나지 못했다(rolloutState=$STATE). 서킷 브레이커가 되돌렸는지 본다: aws ecs describe-services --services $ECS_SERVICE"; exit 1 ;;
+            esac
+          done
+          echo "45분 안에 끝나지 않았다"; exit 1
+
+      - name: 스모크 테스트
+        env:
+          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
+        run: |
+          curl -fsS "$PUBLIC_URL/healthz"
+          curl -fsS "$PUBLIC_URL/readyz"

@@ -1,0 +1,30 @@
+# 로컬 확인용 OpenTelemetry 컬렉터 설정(D33). 운영은 같은 태스크의 ADOT 컬렉터 사이드카가 이 자리에 선다.
+#   docker compose --profile otel up -d otel-collector
+#   OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:55318 go run ./cmd/server
+#   docker logs -f go-chat-otel
+# 받은 것을 컨테이너 로그로 찍기만 한다(debug 익스포터). 스팬 하나하나를 보려면 OTEL_DEBUG_VERBOSITY=detailed 로 띄운다.
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch: {}
+
+exporters:
+  debug:
+    verbosity: ${env:OTEL_DEBUG_VERBOSITY:-basic}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]

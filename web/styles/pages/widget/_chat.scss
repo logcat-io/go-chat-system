@@ -1,0 +1,248 @@
+// 대화(위젯 상담 화면). 고객(나)은 관리자 색을 채운 말풍선, 상담원·자동 메시지는 바탕 없는 본문이다.
+// 상대 줄의 작은 아바타·이름·시각은 묶음 끝 줄 아래 한 줄에 둔다. 긴 이름은 한 줄로 자르고 시각은 꺾지 않는다.
+@use "../../tokens" as *;
+@use "../../tools" as *;
+
+body.widget {
+  .log {
+    padding: space(3) space(4);
+  }
+
+  .row {
+    margin-top: space(4);
+
+    + .row.same {
+      margin-top: space(1);
+    }
+
+    .stack {
+      position: relative;
+    }
+  }
+
+  // 말풍선의 색·테두리는 공용 컴포넌트의 본문형 변형(.log-plain, components/_message.scss)이 정한다. 여기서는 크기·여백만 덮는다(ADR 0005).
+  // 고객(나)은 관리자 색 채움(공용 .row.mine .bubble), 상담원·자동 메시지는 바탕 없는 본문이다.
+  .bubble {
+    padding: space(2.5) space(4);
+    font-size: font-size("md");
+    line-height: 1.55;
+  }
+
+  .row.theirs .bubble,
+  .row.bot .bubble {
+    padding: space(0.5) 0;
+  }
+
+  // 상대 줄: 말풍선(본문·첨부)은 한 줄씩 차지하고, 이름(.who)과 시각(.meta)은 그 아래 한 줄에 나란히 놓는다. 아바타는 그 줄 왼쪽에 겹친다.
+  // .stack 을 줄바꿈하는 flex 로 두고 본문·첨부는 폭 100%, 이름은 시각 자리(80px)를 남기고 줄어들며 말줄임표로 잘린다 — 긴 이름에도 시각이 꺾이지 않는다.
+  // 묶음 끝은 "다음 줄이 같은 사람(.same)이 아닌 줄" 이다(:has). :has 를 못 읽는 브라우저는 묶음 첫 줄 아래에 이름과 아바타가 남는다.
+  .row.theirs:not(.system) {
+    position: relative;
+    gap: 0;
+  }
+
+  .row.theirs {
+    .stack {
+      flex-flow: row wrap;
+      align-items: center;
+      column-gap: space(1.5);
+      max-width: 88%;
+    }
+
+    .stack > * {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+
+    // 사진·영상·파일 카드는 자기 폭이다(왼쪽 정렬)
+    .stack > .attach {
+      flex-basis: auto;
+    }
+
+    .stack > .who {
+      flex: 0 1 auto;
+      order: 10;
+
+      // 이름은 같은 줄의 시각 자리(80px, "14:15 · 수정됨" 까지)를 남기고 줄어든다 — 간격이 아니라 시각 글자의 폭이다
+      // stylelint-disable-next-line declaration-property-value-disallowed-list
+      max-width: calc(100% - 80px);
+      margin: space(1.5) 0 0;
+      padding-left: space(6);
+      color: var(--ink-3);
+      font-size: font-size("xs");
+      font-weight: weight("medium");
+    }
+
+    .stack > .meta {
+      flex: none;
+      order: 11;
+    }
+
+    .avatar {
+      position: absolute;
+      bottom: 1px;
+      left: 0;
+      width: 18px;
+      height: 18px;
+      font-size: font-size("3xs");
+    }
+
+    &:has(+ .row.same) {
+      .who {
+        display: none;
+      }
+
+      .avatar {
+        visibility: hidden;
+      }
+    }
+
+    &:not(:has(+ .row.same)) .stack > .meta {
+      margin-top: space(1.5);
+    }
+
+    &.same:not(:has(+ .row.same)) {
+      .who {
+        display: block;
+      }
+
+      .avatar {
+        visibility: visible;
+      }
+    }
+  }
+
+  // 자동 메시지(BOT) 아바타는 관리자 색 칸 안의 말풍선(머리 로고와 같은 모양)
+  .row .avatar.bot {
+    border-radius: var(--r-xs);
+    background: var(--brand);
+    color: transparent;
+    font-size: 0;
+
+    &::before {
+      @include glyph("chat", 12px, var(--brand-ink));
+    }
+  }
+
+  .meta {
+    margin-top: space(1);
+    font-size: font-size("xs");
+
+    // 고객에게는 메시지 번호(#n)를 보이지 않는다. 시간 다음 칸이 번호다(ui.js rowHTML).
+    > span:nth-child(2):not([class]) {
+      display: none;
+    }
+
+    .read {
+      display: inline-flex;
+      align-items: center;
+      gap: space(0.5);
+      color: var(--brand-text);
+      font-weight: weight("semibold");
+
+      &[hidden] {
+        display: none;
+      }
+
+      &::before {
+        @include glyph("check", 13px, var(--brand-text));
+      }
+    }
+  }
+
+  // 같은 사람이 같은 분에 보낸 줄은 마지막 줄에만 시간을 남긴다(widget.js regroupTimes)
+  .row.t-grouped {
+    .meta > span:first-child {
+      display: none;
+    }
+
+    // 시간이 빠진 줄의 남은 칸(읽음·메뉴)은 말풍선 옆에 띄워 줄 간격을 늘리지 않는다
+    .meta {
+      position: absolute;
+      top: 50%;
+      margin: 0;
+      white-space: nowrap;
+      transform: translateY(-50%);
+    }
+
+    &.mine .meta {
+      right: calc(100% + #{space(1.5)});
+    }
+
+    &.theirs .meta {
+      left: calc(100% + #{space(1.5)});
+    }
+  }
+
+  // 날짜 구분선: 가운데 회색 글자 하나
+  .divider:not(.unread):not(.prior-end):not(.prior-head) {
+    align-self: center;
+    justify-content: center;
+    margin: space(4.5) 0 space(0.5);
+    padding: 0;
+    background: none;
+    color: var(--ink-3);
+    font-size: font-size("xs");
+    font-weight: weight("medium");
+
+    &::before,
+    &::after {
+      display: none;
+    }
+  }
+
+  .row.system .bubble {
+    font-size: font-size("xs");
+  }
+
+  // 첨부: 사진·영상·파일 카드. 색·테두리는 공용 컴포넌트 그대로이고(사진 테두리는 .log-plain 의 연한 선) 여기서는 크기·여백과
+  // 위젯에만 있는 3D 종류 아이콘(D41)만 더한다.
+  .attach.file {
+    gap: space(3);
+    min-width: min(200px, 100%);
+    padding: space(3) space(4) space(3) space(3);
+
+    > span[aria-hidden="true"] {
+      display: none;
+    }
+
+    &::before {
+      flex: none;
+      width: 36px;
+      height: 36px;
+      background: url("/icons/page.png") center / contain no-repeat;
+      content: "";
+    }
+
+    .size {
+      font-size: font-size("xs");
+    }
+
+    // 브라우저가 재생하지 못한 영상은 파일 카드(data-inline="1")로 바뀐다. 영상 아이콘을 쓴다.
+    &[data-inline="1"]::before {
+      background-image: url("/icons/video_camera.png");
+    }
+  }
+
+  .att-video .att-video-save {
+    display: flex;
+    align-items: center;
+    gap: space(1);
+    min-height: 32px;
+    margin-top: space(0.5);
+    font-size: font-size("xs");
+    text-decoration: none;
+
+    &::before {
+      flex: none;
+      width: 16px;
+      height: 16px;
+      background: url("/icons/video_camera.png") center / contain no-repeat;
+      content: "";
+    }
+  }
+
+  .typing {
+    padding: space(1.5) space(4);
+  }
+}

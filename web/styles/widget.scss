@@ -1,0 +1,17 @@
+/*! 생성된 파일이다. 고치려면 web/styles/ 의 SCSS 를 고치고 `npm run css` 를 돌린다(D44). */
+
+// 고객 위젯 전용(D38·D41·D44). widget.html 만 app.css 다음에 읽는다.
+// 선택자는 전부 body.widget 아래라 데스크(desk.html)에는 닿지 않는다(정책 505, widget-view.test.mjs 가 본다).
+// 방향(D44): 흰 머리에 관리자 색 로고, 굵은 제목·회색 보조 글, 넉넉한 여백, 외곽선 알약,
+// 고객 말풍선만 관리자 색 채움, 흰 카드와 연한 테두리. 모서리는 4px 기준이다.
+
+@use "pages/widget/tokens";
+@use "pages/widget/shell";
+@use "pages/widget/controls";
+@use "pages/widget/home";
+@use "pages/widget/list";
+@use "pages/widget/faq";
+@use "pages/widget/chat";
+@use "pages/widget/composer";
+@use "pages/widget/close";
+@use "pages/widget/responsive";

@@ -1,0 +1,66 @@
+// 리셋과 문서 기본값.
+@use "../tokens" as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: font-size("base");
+  line-height: leading("base");
+  -webkit-font-smoothing: antialiased;
+}
+
+body.embed {
+  background: transparent;
+}
+
+button,
+input,
+textarea,
+select {
+  color: inherit;
+  font: inherit;
+}
+
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+img,
+video {
+  max-width: 100%;
+}
+
+a {
+  color: var(--brand-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-text);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

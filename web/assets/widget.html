@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>상담</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app.css">
+  <link rel="stylesheet" href="/widget.css">
+</head>
+<body class="widget">
+  <!-- 직접 열었을 때만 보이는 호스트 페이지 흉내. 임베드 모드에서는 숨긴다. -->
+  <main id="demoHost" class="w-demo">
+    <h1>데모 상점</h1>
+    <p class="muted">오른쪽 아래 버튼을 눌러 상담을 시작해 주세요. 실제 사이트에는 <code>embed.js</code> 한 줄로 붙습니다.</p>
+  </main>
+
+  <!-- 3D 아이콘은 Microsoft Fluent Emoji(MIT, icons/LICENSE). 같은 서버에서만 받는다(D38). 인사 배너·빈 상태·첨부 종류에만 쓴다(D41). -->
+  <button class="launcher" id="launcher" aria-label="상담 열기">
+    <span class="badge" id="launcherBadge" hidden>0</span>
+  </button>
+
+  <section class="messenger closed" id="messenger" aria-label="상담 메신저" data-view="home">
+    <header class="m-head">
+      <button class="icon-btn" id="back" hidden aria-label="뒤로">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <!-- 로고 자리: 관리자 색 칸 안의 평면 말풍선(CSS) -->
+      <span class="w-head-avatar" aria-hidden="true"></span>
+      <div class="w-head-text">
+        <h1 id="headTitle">고객센터</h1>
+        <div class="sub" id="headSub">보통 몇 분 안에 답변합니다</div>
+      </div>
+      <div class="spacer"></div>
+      <span class="status" id="status" data-state="connecting"><span class="dot"></span><span id="statusText"></span></span>
+      <!-- 진행 중인 상담에서만 보인다. 누르면 확인 창을 거쳐 고객이 상담을 닫는다(D48) -->
+      <button type="button" class="w-end-btn" id="endChat" hidden aria-haspopup="dialog">상담 종료</button>
+      <button class="icon-btn" id="close" aria-label="닫기">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+
+    <div class="m-body">
+      <div class="m-view m-home" id="viewHome">
+        <section class="w-hero">
+          <img class="w-hero-icon" src="/icons/waving_hand.png" alt="" width="52" height="52">
+          <h2 id="greetTitle">안녕하세요</h2>
+          <p id="greetText">궁금한 점을 남겨 주시면 상담원이 확인하고 답해 드립니다.</p>
+          <div class="w-team">
+            <div class="w-avatars" id="agentStack" aria-hidden="true"></div>
+            <span id="replyHint">보통 몇 분 안에 답변합니다</span>
+          </div>
+        </section>
+
+        <div class="w-sections">
+          <div class="card w-card w-start">
+            <div class="hours-pill" id="hoursPill"></div>
+            <div class="session-notice" id="sessionNotice" role="alert" hidden>
+              <span id="sessionNoticeText"></span>
+              <button type="button" class="btn sm" id="sessionRetry">다시 연결</button>
+            </div>
+            <button class="btn primary block w-cta" id="startChat">새 문의 시작하기</button>
+          </div>
+          <section class="w-section" id="recentCard" aria-labelledby="recentTitle" hidden>
+            <div class="section-head">
+              <h2 class="w-card-title" id="recentTitle">최근 문의</h2>
+              <p class="section-sub">최근 문의한 내역을 확인해 보세요</p>
+              <button type="button" class="link-btn" id="recentAll">전체보기</button>
+            </div>
+            <div id="recentList" class="w-conv-list"></div>
+          </section>
+          <section class="w-section" id="faqCard" aria-labelledby="faqTitle" hidden>
+            <div class="section-head">
+              <h2 class="w-card-title" id="faqTitle">자주 묻는 질문</h2>
+              <p class="section-sub">궁금한 내용을 눌러 답을 확인해 보세요</p>
+              <button type="button" class="link-btn" id="faqAll">전체보기</button>
+            </div>
+            <div id="faq" class="pills w-faq"></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- 자주 묻는 질문 화면: 관리자가 정한 순서의 아코디언(D44). 홈의 "전체보기" 나 질문 알약으로 연다 -->
+      <div class="m-view w-faq-view" id="viewFaq" hidden>
+        <p class="w-faq-lead">질문을 누르면 답이 펼쳐집니다.</p>
+        <div class="accordion" id="faqList"></div>
+        <div class="w-faq-foot">
+          <p>원하는 답을 찾지 못하셨나요?</p>
+          <button type="button" class="btn lg block outline-brand" id="faqStart">상담원에게 문의하기</button>
+        </div>
+      </div>
+
+      <div class="m-view w-list" id="viewList" hidden>
+        <div id="convList" class="w-conv-list"></div>
+        <div id="listEmpty" hidden></div>
+      </div>
+
+      <div class="m-view dropzone" id="viewChat" hidden>
+        <div class="log log-plain" id="log"><div id="msgs"></div><div id="pending"></div><div id="csat" hidden></div></div>
+        <div class="typing" id="typing" hidden><span class="dots"><i></i><i></i><i></i></span><span id="typingLabel"></span></div>
+        <!-- 닫힌 뒤 다른 탭이 늦게 보낸 글(closed_by_customer 로 거절). 닫힌 상담에서는 새 문의하기 위에 보이고 새 문의하기가 입력칸으로 옮긴다.
+             상담원이 다시 열었는데 입력칸에 쓰던 글이 있어 옮기지 못하면 입력창 위에 남는다. 지우기는 고객만 한다 -->
+        <div class="w-returned" id="returned" role="status" hidden>
+          <p class="w-returned-title">보내지 못한 글</p>
+          <p class="w-returned-body" id="returnedBody"></p>
+          <p class="w-returned-hint" id="returnedHint">종료된 상담이라 보내지 못했습니다. 새 문의하기를 누르면 입력칸에 옮겨 드립니다.</p>
+          <div class="w-returned-actions">
+            <button type="button" class="btn sm" id="returnedCopy">글 복사</button>
+            <button type="button" class="btn sm ghost" id="returnedClear" aria-label="보내지 못한 글을 지웁니다">지우기</button>
+          </div>
+        </div>
+        <form class="composer composer-boxed" id="composer">
+          <div class="tools" id="attachRow">
+            <span id="attachHint" aria-live="polite"></span>
+          </div>
+          <div class="input-row">
+            <button type="button" class="w-attach-btn" id="attachBtn" aria-label="파일 첨부" title="파일 첨부"></button>
+            <input type="file" id="file" hidden>
+            <textarea id="input" rows="1" placeholder="메시지를 입력해 주세요" aria-label="메시지"></textarea>
+            <button class="send" type="submit" id="send" aria-label="보내기">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </form>
+        <!-- 고객이 닫은 상담(D48): 입력창 대신 새 문의하기. 이 상담에는 더 쓰지 않는다 -->
+        <div class="w-closed-foot" id="closedFoot" hidden>
+          <p id="closedText">상담이 종료되었습니다. 더 궁금한 점이 있으면 새로 문의해 주세요.</p>
+          <button type="button" class="btn primary block" id="newInquiry">새 문의하기</button>
+        </div>
+      </div>
+    </div>
+
+    <nav class="m-nav" id="nav">
+      <button data-view="home" aria-current="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10.5L12 4l8 6.5V20H4v-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>홈
+      </button>
+      <button data-view="list">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3c-4.97 0-9 3.36-9 7.5 0 2.3 1.25 4.35 3.2 5.7L5.5 21l4.2-2.2c.74.13 1.51.2 2.3.2 4.97 0 9-3.36 9-7.5S16.97 3 12 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>대화
+        <span class="badge" id="navBadge" hidden>0</span>
+      </button>
+    </nav>
+  </section>
+
+  <script type="module" src="/widget.js"></script>
+</body>
+</html>

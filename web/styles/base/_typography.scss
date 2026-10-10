@@ -1,0 +1,46 @@
+// 글자. 제목은 Sora(라틴 글자·숫자)·굵게(700)·좁은 글자 간격, 보조 글은 --ink-3.
+@use "../tokens" as *;
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: weight("bold");
+  letter-spacing: var(--tracking-tight);
+  line-height: leading("tight");
+}
+
+p {
+  margin: 0;
+}
+
+.title-lg {
+  font-size: font-size("xl");
+}
+
+.title-md {
+  font-size: font-size("lg");
+}
+
+.title-sm {
+  font-size: font-size("md");
+}
+
+.lead {
+  color: var(--ink-2);
+  font-size: font-size("sm");
+}
+
+.muted {
+  color: var(--ink-3);
+}
+
+.small {
+  font-size: font-size("xs");
+}
+
+code,
+.code {
+  font-family: var(--mono);
+}

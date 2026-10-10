@@ -1,0 +1,202 @@
+// 홈: 인사 배너 → 상담 시작 카드 → 최근 문의(섹션 머리 + 카드) → 자주 묻는 질문(섹션 머리 + 알약 몇 개).
+// 회색 바탕 위의 굵은 섹션 제목, 회색 보조 글, 오른쪽 "전체보기", 흰 카드와 외곽선 알약.
+@use "../../tokens" as *;
+@use "../../tools" as *;
+
+body.widget {
+  .m-home {
+    gap: 0;
+    padding: 0 0 space(6);
+    overflow-y: auto;
+
+    // 내용이 길어도 배너가 눌려 줄지 않고 홈이 스크롤된다
+    > * {
+      flex: none;
+    }
+  }
+
+  // 인사 배너: 연한 관리자 색(틴트) 바탕에 진한 제목과 본문색 글(밝은 배너). 관리자 색을 꽉 채우지 않아
+  // 노랑·남색 같은 관리자 색에서도 가볍다. 일러스트는 넣지 않고 3D 아이콘(손 흔들기·상담원 자리의 헤드폰)만 여기에 쓴다.
+  .w-hero {
+    position: relative;
+    padding: space(6) space(6) space(7);
+    overflow: hidden;
+    background: var(--brand-soft);
+    color: var(--ink);
+
+    // 오른쪽 아래의 옅은 원 하나. 관리자 색을 조금 더 진하게 겹친다.
+    &::after {
+      position: absolute;
+      right: -90px;
+      bottom: -120px;
+      width: 220px;
+      height: 220px;
+      border-radius: var(--r-circle);
+      background: var(--brand-soft);
+      content: "";
+      pointer-events: none;
+    }
+
+    h2 {
+      margin: 0 0 space(2);
+      color: var(--ink);
+      font-size: font-size("2xl");
+      font-weight: weight("extrabold");
+      letter-spacing: var(--tracking-tight);
+    }
+
+    p {
+      max-width: 30em;
+      margin: 0 0 space(4.5);
+      color: var(--ink-2);
+      font-size: font-size("md");
+      line-height: 1.55;
+    }
+  }
+
+  .w-hero-icon {
+    display: block;
+    width: 44px;
+    height: 44px;
+    margin: 0 0 space(3);
+    transform-origin: 70% 80%;
+    animation: w-wave 1.2s var(--ease) 300ms 1 both;
+  }
+
+  .w-team {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: space(2.5);
+    color: var(--ink-2);
+    font-size: font-size("sm");
+    font-weight: weight("semibold");
+
+    > span {
+      min-width: 0;
+    }
+  }
+
+  .w-avatars {
+    display: flex;
+    flex: none;
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border: 2px solid var(--panel);
+      font-size: font-size("xs");
+
+      + .avatar {
+        margin-left: -(space(2));
+      }
+    }
+  }
+
+  .w-avatar-icon {
+    background: var(--panel);
+
+    img {
+      display: block;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  // 섹션들. 회색 바탕 위에 섹션 제목과 흰 카드가 놓인다.
+  .w-sections {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: space(8);
+    padding: space(4) space(4) 0;
+  }
+
+  // 섹션 제목·카드·알약의 왼쪽 끝을 맞춘다
+  .w-section .section-head {
+    padding: 0;
+  }
+
+  // 상담 시작 칸: 가볍게 — 테두리·그림자 없는 흰 판, 여백만.
+  .w-card {
+    padding: space(4);
+    border: 0;
+    box-shadow: none;
+  }
+
+  .w-card-title {
+    margin: 0;
+    font-size: font-size("lg");
+  }
+
+  .hours-pill {
+    display: flex;
+    margin: 0 0 space(4);
+  }
+
+  // 운영 표시: 상태 색 점과 글자(3D 시계·달은 쓰지 않는다)
+  .w-hours {
+    gap: space(1.5);
+    height: 28px;
+    padding: 0 space(3) 0 space(2.5);
+    font-size: font-size("xs");
+
+    &::before {
+      width: 7px;
+      height: 7px;
+      border-radius: var(--r-circle);
+      background: currentcolor;
+      content: "";
+    }
+  }
+
+  .session-notice {
+    display: flex;
+    align-items: center;
+    gap: space(2);
+    margin: 0 0 space(3);
+    padding: space(2.5) space(3);
+    border-radius: var(--r);
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-size: font-size("sm");
+
+    span {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  // 자주 묻는 질문(홈): 앞의 몇 개만 외곽선 알약으로. 전체는 "전체보기" 의 자주 묻는 질문 화면에서 본다.
+  // 한 줄에 두 개씩 놓는다. 두 칸은 자기 글 폭(max-content)까지 넓어지고, 둘이 다 들어가지 않으면 남는 폭을 나눠 가진 뒤
+  // 긴 질문은 말줄임표로 잘린다 — 320px 화면에서도 두 개씩이다. 짧은 질문 둘은 자기 폭 그대로다.
+  .w-faq {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    justify-content: start;
+    padding: 0;
+
+    .pill {
+      justify-self: start;
+      min-width: 0;
+      padding: space(2.5) space(3);
+    }
+  }
+}
+
+@keyframes w-wave {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+
+  20%,
+  60% {
+    transform: rotate(14deg);
+  }
+
+  40%,
+  80% {
+    transform: rotate(-6deg);
+  }
+}

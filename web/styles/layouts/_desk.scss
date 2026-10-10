@@ -1,0 +1,526 @@
+// 상담원 데스크 배치: 위 막대, 받은함 네 단(필터·목록·대화·고객 정보), 대화 머리.
+// 정보 밀도는 위젯보다 높다(D41). 칸마다 자기 안에서만 스크롤한다 — 대화가 길어도 위 막대와 목록이 밀려 올라가지 않는다.
+@use "../tokens" as *;
+@use "../tools" as *;
+
+.desk {
+  display: grid;
+  grid-template-rows: $desk-topbar minmax(0, 1fr);
+  height: 100%;
+  overflow: hidden;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: space(3);
+  min-width: 0;
+  padding: 0 space(3.5);
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+
+  .brand {
+    margin-right: space(1);
+    color: var(--brand-text);
+    font-size: font-size("lead");
+    font-weight: weight("bold");
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .brand-name {
+    @include truncate;
+
+    max-width: 160px;
+    margin-left: -(space(1));
+  }
+
+  .nav {
+    display: flex;
+    flex: none;
+    gap: space(0.5);
+
+    button {
+      padding: space(1.5) space(3);
+      border-radius: var(--r);
+      color: var(--ink-3);
+      font-size: font-size("sm");
+      font-weight: weight("semibold");
+
+      &[aria-current="true"] {
+        background: var(--brand-soft);
+        color: var(--brand-text);
+      }
+    }
+  }
+
+  .search {
+    position: relative;
+    flex: 0 1 300px;
+    min-width: 120px;
+
+    input {
+      height: 32px;
+      border-color: transparent;
+      border-radius: var(--r);
+      background: var(--bg);
+    }
+  }
+
+  .status {
+    flex: none;
+  }
+
+  // 상담원 이름이 길어도 위 막대가 넘치지 않는다.
+  #meBtn {
+    max-width: 220px;
+
+    .me-name {
+      @include truncate;
+    }
+  }
+}
+
+// 좁은 화면에서만 보이는 단추: 메뉴 열기(☰), 목록으로(‹), 고객 정보. 넓은 화면에서는 칸이 다 보여 필요 없다.
+.nav-toggle,
+.back-btn,
+.profile-toggle {
+  display: none;
+}
+
+.nav-toggle::before {
+  @include glyph("menu", 20px);
+}
+
+.back-btn::before {
+  @include glyph("chevron-left", 20px);
+}
+
+.nav-toggle,
+.back-btn {
+  @include tap-target;
+
+  flex: none;
+  margin-left: -(space(2));
+  color: var(--ink);
+}
+
+.drawer-scrim {
+  position: fixed;
+  inset: $desk-topbar 0 0;
+  z-index: z("drawer-scrim");
+  background: var(--scrim);
+  animation: fade-in var(--t-fast);
+}
+
+.results {
+  position: absolute;
+  top: 38px;
+  left: 0;
+  z-index: z("dropdown");
+  width: min(460px, calc(100vw - #{space(8)}));
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--panel);
+  box-shadow: var(--shadow-md);
+
+  button {
+    display: block;
+    width: 100%;
+    padding: space(2.5) space(3);
+    border-bottom: 1px solid var(--line-2);
+    text-align: left;
+
+    &:hover {
+      background: var(--brand-soft);
+    }
+  }
+
+  .who {
+    font-size: font-size("xs");
+    font-weight: weight("bold");
+  }
+
+  .snip {
+    color: var(--ink-2);
+    font-size: font-size("xs");
+    overflow-wrap: anywhere;
+  }
+}
+
+.desk-body {
+  display: grid;
+  grid-template-columns: 196px 320px minmax(0, 1fr) 300px;
+  min-height: 0;
+
+  > * {
+    min-height: 0;
+  }
+}
+
+.filters {
+  padding: space(2.5) space(2);
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--panel);
+
+  h3 {
+    margin: space(3) space(2) space(1.5);
+    color: var(--ink-3);
+    font-size: font-size("2xs");
+    letter-spacing: 0.04em;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: space(2);
+    width: 100%;
+    padding: space(1.5) space(2.5);
+    border-radius: var(--r);
+    color: var(--ink-2);
+    font-size: font-size("sm");
+    font-weight: weight("semibold");
+    text-align: left;
+
+    &:hover {
+      background: var(--line-2);
+    }
+
+    &[aria-current="true"] {
+      background: var(--brand-soft);
+      color: var(--brand-text);
+    }
+  }
+
+  .count {
+    margin-left: auto;
+    color: var(--ink-3);
+    font-size: font-size("2xs");
+    font-weight: weight("bold");
+
+    &.badge {
+      background: var(--danger);
+      color: var(--on-color);
+    }
+  }
+
+  .filters-empty {
+    padding: space(1) space(2.5);
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.list-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: space(2);
+  padding: space(3) space(3.5);
+  border-bottom: 1px solid var(--line);
+
+  h2 {
+    font-size: font-size("md");
+  }
+}
+
+.conv-row {
+  display: flex;
+  align-items: flex-start;
+  gap: space(2.5);
+  width: 100%;
+  padding: space(3) space(3.5);
+  border-bottom: 1px solid var(--line-2);
+  text-align: left;
+  transition: background var(--t-fast);
+
+  &:hover {
+    background: var(--line-2);
+  }
+
+  &[aria-current="true"] {
+    background: var(--brand-soft);
+    box-shadow: inset 3px 0 0 var(--brand);
+
+    .chip.brand {
+      background: var(--panel); // 선택한 줄의 연한 바탕에 칩이 묻히지 않게
+    }
+  }
+
+  .body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  // 이름은 한 줄로 자른다. 담당자 칩과 상태 칩이 자리를 먹어도 줄이 꺾이지 않는다.
+  .title {
+    display: flex;
+    align-items: center;
+    gap: space(1.5);
+    min-width: 0;
+    font-size: font-size("sm");
+    font-weight: weight("bold");
+
+    .name {
+      @include truncate;
+    }
+
+    .chip {
+      flex: none;
+    }
+  }
+
+  .preview {
+    @include truncate;
+
+    margin-top: space(0.5);
+    color: var(--ink-3);
+    font-size: font-size("xs");
+  }
+
+  &.unread .preview {
+    color: var(--ink);
+    font-weight: weight("semibold");
+  }
+
+  .side {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: space(1);
+
+    .chip {
+      @include truncate;
+
+      display: inline-block;
+      max-width: 88px;
+    }
+  }
+
+  .when {
+    color: var(--ink-3);
+    font-size: font-size("2xs");
+  }
+
+  .tagline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: space(1);
+    margin-top: space(1);
+  }
+}
+
+.thread {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.thread-head {
+  display: flex;
+  align-items: center;
+  gap: space(2.5);
+  min-width: 0;
+  padding: space(2.5) space(3.5);
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+
+  .thread-head-text {
+    min-width: 0;
+  }
+
+  h2 {
+    @include truncate;
+
+    font-size: font-size("md");
+  }
+
+  .sub {
+    @include truncate;
+
+    color: var(--ink-3);
+    font-size: font-size("xs");
+  }
+}
+
+.toolbar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: space(1.5);
+}
+
+.profile {
+  overflow-y: auto;
+  border-left: 1px solid var(--line);
+  background: var(--panel);
+
+  section {
+    padding: space(3.5) space(4);
+    border-bottom: 1px solid var(--line-2);
+  }
+
+  h3 {
+    display: flex;
+    align-items: center;
+    margin: 0 0 space(2.5);
+    color: var(--ink-3);
+    font-size: font-size("2xs");
+    letter-spacing: 0.04em;
+
+    .icon-btn {
+      width: 24px;
+      height: 24px;
+      margin-left: auto;
+    }
+  }
+
+  .who {
+    display: flex;
+    align-items: center;
+    gap: space(2.5);
+    min-width: 0;
+
+    > div:last-child {
+      min-width: 0;
+    }
+
+    .name {
+      @include truncate;
+
+      font-size: font-size("md");
+      font-weight: weight("bold");
+      letter-spacing: var(--tracking-tight);
+    }
+  }
+
+  .kv {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: space(2) space(2.5);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    font-size: font-size("sm");
+    resize: vertical;
+  }
+}
+
+@include below("desk-3col") {
+  .desk-body {
+    grid-template-columns: 180px 280px minmax(0, 1fr);
+  }
+
+  // 고객 정보는 칸에서 빠지고 대화 머리의 "고객 정보" 단추로 여는 오른쪽 서랍이다(정책 828). 대화를 열지 않았으면 단추도 없다.
+  .profile-toggle {
+    display: inline-flex;
+    flex: none;
+  }
+
+  .toolbar[hidden] ~ .profile-toggle {
+    display: none;
+  }
+
+  .profile {
+    @include drawer(right, $drawer-profile);
+  }
+
+  .desk.profile-open .profile {
+    @include drawer-open;
+  }
+}
+
+// 900px 이하: 한 칸씩 보인다(정책 826). 받은함 목록 ↔ 대화(‹ 로 돌아온다). 필터는 ☰ 로 여는 왼쪽 서랍이다(정책 827).
+// 상담원은 목록에서 고르고 대화에 답하는 일을 번갈아 한다 — 둘을 한 화면에 욱여넣기보다 한 번에 하나를 크게 보이는 쪽이 읽고 쓰기 쉽다.
+// 필터는 자주 바꾸지 않아 서랍에 둔다.
+@include below("tablet") {
+  .desk-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .nav-toggle,
+  .back-btn {
+    display: inline-grid;
+  }
+
+  .topbar {
+    gap: space(2);
+    padding: 0 space(3);
+
+    .brand-name {
+      display: none;
+    }
+
+    .search {
+      flex: 1 1 160px;
+    }
+  }
+
+  .filters {
+    @include drawer(left, $drawer-nav);
+  }
+
+  .desk.nav-open .filters {
+    @include drawer-open;
+  }
+
+  .list {
+    display: none;
+    border-right: 0; // 한 칸일 때 오른쪽 끝에 선이 남는다
+  }
+
+  .desk.show-list .list {
+    display: flex;
+  }
+
+  .desk.show-list .thread {
+    display: none;
+  }
+
+  .thread-head {
+    flex-wrap: wrap;
+    padding: space(2) space(3);
+  }
+}
+
+// 휴대폰 폭: 위 막대에 ☰·Desk·받은함/설정·검색·연결 점·내 이름이 한 줄로 들어가게 줄인다. 연결 상태 글은 화면 읽기 프로그램만 읽는다.
+@include below("phone") {
+  .topbar {
+    .brand {
+      display: none;
+    }
+
+    .nav button {
+      padding: space(1.5) space(2);
+    }
+
+    .search {
+      min-width: 0;
+    }
+
+    #statusText {
+      @include visually-hidden;
+    }
+
+    #meBtn {
+      max-width: 96px;
+      padding: 0 space(2);
+    }
+  }
+}

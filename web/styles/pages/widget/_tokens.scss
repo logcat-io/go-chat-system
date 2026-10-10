@@ -1,0 +1,39 @@
+// 위젯 토큰과 어두운 테마. 데스크에 닿지 않게 body.widget 에서만 정한다(D38).
+// --brand 는 덮지 않는다 — applyBrand(ui.js)가 html 에 쓴 관리자 색이 가려진다(widget-view.test.mjs 가 본다).
+@use "../../tokens" as *;
+
+body.widget {
+  --w-tap: #{$tap}; // 손가락으로 누르는 칸의 최소 크기(정책 623)
+  --w-edge: var(--line-2); // 카드·목록의 연한 테두리
+  --w-float: 0 2px 6px rgb(21 19 16 / 6%), 0 16px 40px -12px rgb(21 19 16 / 22%); // 떠 있는 판(메신저)만
+  --w-head-h: 64px;
+
+  // 한국어는 어절 단위로 줄을 바꾼다. 긴 주소·번호·이어 쓴 글자는 어디서든 끊는다.
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+// 어두운 테마. 운영체제 설정을 따른다. color-scheme 은 바꾸지 않는다 — 바꾸면 호스트 페이지의 투명 iframe 이 불투명해진다.
+@media (prefers-color-scheme: dark) {
+  body.widget {
+    @each $name, $value in $dark {
+      --#{$name}: #{$value};
+    }
+
+    --brand-soft: color-mix(in srgb, var(--brand) 24%, transparent);
+    --brand-text: color-mix(in srgb, var(--brand) 55%, #ffffff); // 어두운 바탕 위의 관리자 색 글자는 밝힌다
+    --w-float: 0 2px 6px rgb(0 0 0 / 40%), 0 24px 60px -14px rgb(0 0 0 / 70%);
+    --shadow-head: 0 1px 0 var(--line);
+  }
+
+  body.widget:not(.embed) {
+    background: var(--bg);
+  }
+}
+
+// 임베드 iframe 은 투명해야 한다. app.css 가 html 에도 바탕색을 칠해서 런처·메신저 둘레에 회색 사각형이 보였다.
+// :has 를 못 읽는 브라우저를 위해 widget.js 가 html 에 w-embed 도 붙인다.
+html:has(> body.widget.embed),
+html.w-embed {
+  background: transparent;
+}

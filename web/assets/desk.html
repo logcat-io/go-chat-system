@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>상담원 데스크</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <!-- 로그인 -->
+  <main class="login" id="loginView">
+    <form class="card" id="loginForm">
+      <h2 class="login-title">상담원 데스크</h2>
+      <p class="login-lead">상담원 계정으로 로그인해 주세요.</p>
+      <div class="field"><label for="email">이메일</label><input id="email" type="email" autocomplete="username" required></div>
+      <div class="field"><label for="password">비밀번호</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn primary block" type="submit">로그인</button>
+      <p class="login-foot">처음이라면 <a href="#" id="joinLink">상담원 가입</a></p>
+    </form>
+  </main>
+
+  <!-- 상담원 가입: 우리 팀에 들어가겠다고 신청한다. 관리자가 승인해야 로그인된다. 설치형 단일 워크스페이스라 고를 곳이 없다(D35) -->
+  <main class="login" id="joinView" hidden>
+    <form class="card" id="joinForm">
+      <h2 class="login-title">상담원 가입</h2>
+      <p class="login-lead" id="joinDesc">신청하면 관리자가 확인하고 승인합니다. 승인되면 로그인할 수 있습니다.</p>
+      <div class="field"><label for="jName">이름</label><input id="jName" required maxlength="40" autocomplete="name"></div>
+      <div class="field"><label for="jEmail">이메일</label><input id="jEmail" type="email" autocomplete="username" required></div>
+      <div class="field"><label for="jPassword">비밀번호 (8자 이상)</label><input id="jPassword" type="password" autocomplete="new-password" minlength="8" required></div>
+      <button class="btn primary block" type="submit" id="joinSubmit">가입 신청</button>
+      <p class="login-foot"><a href="#" id="joinBackToLogin">로그인으로 돌아가기</a></p>
+    </form>
+  </main>
+
+  <!-- 초대 수락 -->
+  <main class="login" id="inviteView" hidden>
+    <form class="card" id="inviteForm">
+      <h2 class="login-title">팀에 합류하기</h2>
+      <p class="login-lead" id="inviteDesc">초대를 확인하는 중…</p>
+      <div class="field"><label for="invitePassword">비밀번호 (8자 이상)</label><input id="invitePassword" type="password" autocomplete="new-password" minlength="8" required></div>
+      <button class="btn primary block" type="submit" id="inviteSubmit">계정 만들고 시작하기</button>
+    </form>
+  </main>
+
+  <div class="desk" id="deskView" hidden>
+    <header class="topbar">
+      <!-- 좁은 화면(900px 이하)에서만 보인다. 왼쪽 메뉴(받은함 필터·설정 메뉴)를 서랍으로 연다 -->
+      <button class="icon-btn nav-toggle" id="navToggle" type="button" aria-label="메뉴" aria-expanded="false" aria-controls="filters settingsNav"></button>
+      <span class="brand">Desk</span><span class="muted small brand-name" id="brandName"></span>
+      <nav class="nav" id="mainNav">
+        <button data-main="inbox" aria-current="true">받은함</button>
+        <button data-main="settings" id="settingsNavBtn" hidden>설정</button>
+      </nav>
+      <div class="search" id="searchWrap">
+        <input class="input" id="search" type="search" placeholder="대화 내용 검색 (⌘K)" autocomplete="off">
+        <div class="results" id="results" hidden></div>
+      </div>
+      <div class="spacer"></div>
+      <span class="status" id="status" data-state="connecting"><span class="dot"></span><span id="statusText"></span></span>
+      <div class="menu-wrap"><button class="btn ghost sm" id="meBtn">상담원 <span class="caret">▾</span></button></div>
+    </header>
+
+    <!-- 받은함 -->
+    <div class="desk-body" id="inboxMain">
+      <aside class="filters" id="filters">
+        <h3>내가 봐야 할 것</h3>
+        <button data-filter="todo">답할 차례<span class="count badge" data-count="todo" hidden>0</span></button>
+        <button data-filter="mine">내 담당<span class="count" data-count="mine"></span></button>
+        <button data-filter="unassigned">미할당<span class="count" data-count="unassigned"></span></button>
+        <button data-filter="following">팔로잉<span class="count" data-count="following"></span></button>
+        <h3>전체</h3>
+        <button data-filter="all" aria-current="true">전체 대화<span class="count" data-count="all"></span></button>
+        <button data-filter="open">진행중<span class="count" data-count="open"></span></button>
+        <button data-filter="snoozed">보류<span class="count" data-count="snoozed"></span></button>
+        <button data-filter="closed">완료<span class="count" data-count="closed"></span></button>
+        <button data-filter="deleted" id="deletedFilter" hidden>삭제됨</button>
+        <h3>태그</h3>
+        <div id="tagFilters"></div>
+      </aside>
+
+      <section class="list">
+        <div class="list-head">
+          <h2 id="listTitle">전체 대화</h2>
+          <span class="spacer"></span>
+          <button class="icon-btn" id="refresh" data-tip="새로고침">↻</button>
+        </div>
+        <div id="convList"></div>
+        <div id="listEmpty" hidden></div>
+      </section>
+
+      <section class="thread dropzone" id="thread">
+        <header class="thread-head">
+          <button class="icon-btn back-btn" id="backToList" type="button" aria-label="목록으로"></button>
+          <div id="threadAvatar"></div>
+          <div class="thread-head-text">
+            <h2 id="threadTitle">대화를 선택해 주세요</h2>
+            <div class="sub" id="threadSub">왼쪽 목록에서 골라 주세요</div>
+          </div>
+          <div class="spacer"></div>
+          <div class="toolbar" id="toolbar" hidden>
+            <div class="menu-wrap"><button class="btn sm" id="assignBtn">담당 <span class="caret">▾</span></button></div>
+            <div class="menu-wrap"><button class="btn sm" id="snoozeBtn">보류 <span class="caret">▾</span></button></div>
+            <button class="btn sm" id="followBtn">팔로우</button>
+            <button class="btn sm primary" id="closeBtn">완료</button>
+            <button class="btn sm danger" id="deleteConvBtn" hidden>삭제</button>
+            <button class="btn sm primary" id="restoreConvBtn" hidden>되살리기</button>
+          </div>
+          <!-- 1280px 이하에서만 보인다. 고객 정보 칸을 오른쪽 서랍으로 연다. 대화를 열지 않았으면(#toolbar 가 숨음) 같이 숨는다 -->
+          <button class="btn sm profile-toggle" id="profileToggle" type="button" aria-expanded="false" aria-controls="profile">고객 정보</button>
+        </header>
+
+        <div class="log" id="log"><div id="msgs"></div><div id="pending"></div></div>
+        <div class="typing" id="typing" hidden><span class="dots"><i></i><i></i><i></i></span><span id="typingLabel"></span></div>
+
+        <form class="composer" id="composer">
+          <div class="snippet-pop" id="snippetPop" hidden></div>
+          <div class="tools" id="composerTools">
+            <button type="button" class="icon-btn" id="internalToggle" data-tip="내부 메모로 전환">🔒</button>
+            <label class="icon-btn" data-tip="파일 첨부">📎<input type="file" id="file" hidden></label>
+            <button type="button" class="icon-btn" id="snippetBtn" data-tip="빠른 답변 ( / )">⚡</button>
+            <button type="button" class="icon-btn" id="draftBtn" data-tip="AI 초안 — 채우기만 하고 보내지 않습니다" hidden>✨</button>
+            <span class="muted small" id="composerHint">고객에게 보내는 메시지</span>
+          </div>
+          <div class="input-row">
+            <textarea id="input" rows="1" placeholder="메시지를 입력해 주세요. / 로 빠른 답변" disabled></textarea>
+            <button class="send" type="submit" id="send" disabled aria-label="보내기">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5L4 12z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="profile" id="profile">
+        <div id="profileEmpty"></div>
+        <div id="profileBody" hidden>
+          <section>
+            <div class="who"><div id="pAvatar"></div><div><div class="name" id="pName">고객</div><div class="muted small" id="pMeta"></div></div></div>
+          </section>
+          <section>
+            <h3>연락처 <button class="icon-btn" id="pEdit" data-tip="수정">✎</button></h3>
+            <dl class="kv"><dt>이메일</dt><dd id="pEmail"></dd><dt>전화</dt><dd id="pPhone"></dd><dt>회원</dt><dd id="pExternal"></dd></dl>
+          </section>
+          <section>
+            <h3>태그</h3>
+            <div class="chips" id="tagChips"></div>
+            <form id="tagForm" class="inline-form">
+              <input class="input sm" id="tagInput" placeholder="태그 추가">
+              <button class="btn sm" type="submit">추가</button>
+            </form>
+          </section>
+          <section>
+            <h3>담당·팔로워</h3>
+            <div class="chips" id="followerChips"></div>
+          </section>
+          <section id="pRatingSec" hidden>
+            <h3>만족도</h3>
+            <div id="pRating"></div>
+          </section>
+          <section id="pDangerZone" hidden>
+            <h3>개인정보</h3>
+            <p class="muted small mb-2">삭제하면 이름·연락처·메시지 본문·첨부가 지워집니다. 대화와 번호는 남습니다.</p>
+            <button class="btn sm danger" id="pDelete">고객 삭제</button>
+          </section>
+          <section>
+            <h3>운영 메모</h3>
+            <textarea id="pNote" placeholder="고객에게 보이지 않는 메모"></textarea>
+            <button class="btn sm mt-2" id="pNoteSave">메모 저장</button>
+          </section>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 설정 -->
+    <div class="settings" id="settingsMain" hidden>
+      <nav class="settings-nav" id="settingsNav">
+        <button data-page="team" data-perm="team.manage" aria-current="true">👥 팀</button>
+        <button data-page="hours" data-perm="workspace.manage">🕘 운영시간</button>
+        <button data-page="messages" data-perm="workspace.manage">💬 자동 메시지</button>
+        <button data-page="widget" data-perm="workspace.manage">🧩 위젯·설치</button>
+        <button data-page="faq" data-perm="workspace.manage">❓ 자주 묻는 질문</button>
+        <button data-page="snippets" data-perm="library.manage">⚡ 빠른 답변</button>
+        <button data-page="workspace" data-perm="workspace.manage">🏢 워크스페이스</button>
+        <button data-page="metrics" data-perm="work.view_all">📈 지표</button>
+        <button data-page="work" data-perm="conversation.work">📊 업무 기록</button>
+        <button data-page="audit" data-perm="workspace.manage">📜 감사 로그</button>
+        <button data-page="account">🔑 내 계정</button>
+      </nav>
+      <div class="settings-body" id="settingsBody"></div>
+    </div>
+
+    <!-- 서랍이 열렸을 때 뒤를 덮는 막. 누르면 닫힌다 -->
+    <div class="drawer-scrim" id="drawerScrim" hidden></div>
+  </div>
+
+  <script type="module" src="/desk.js"></script>
+</body>
+</html>

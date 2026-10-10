@@ -1,0 +1,11 @@
+/bin/
+*.test
+.env
+.DS_Store
+/data/
+# IDE 설정은 사람마다 다르다
+/.idea/
+# 설계·가이드·ADR·학습 문서는 로컬 전용이다(2026-10-07 logcat 결정)
+/docs/
+# 화면 개발 도구(npm ci). 서버 빌드에는 필요 없다(D44)
+/node_modules/

@@ -1,0 +1,68 @@
+// 칩(상태·태그·역할)과 배지(안 읽은 수). 둘 다 알약 모양이다 — 4px 기준의 예외(D44).
+@use "../tokens" as *;
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: space(1);
+  max-width: 100%;
+  height: 24px;
+  padding: 0 space(2);
+  border-radius: var(--r-pill);
+  background: var(--line-2);
+  color: var(--ink-2);
+  font-size: font-size("xs");
+  font-weight: weight("semibold");
+  white-space: nowrap;
+
+  &.brand,
+  &.role-admin {
+    background: var(--brand-soft);
+    color: var(--brand-text);
+  }
+
+  &.ok {
+    background: var(--ok-soft);
+    color: var(--ok-ink);
+  }
+
+  &.warn {
+    background: var(--warn-soft);
+    color: var(--warn-ink);
+  }
+
+  &.danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  button {
+    color: inherit;
+    font-size: font-size("sm");
+    line-height: 1;
+    opacity: 0.6;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(1.5);
+}
+
+.badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 space(1);
+  border-radius: var(--r-pill);
+  background: var(--danger);
+  color: var(--on-color);
+  font-size: font-size("2xs");
+  font-weight: weight("bold");
+}

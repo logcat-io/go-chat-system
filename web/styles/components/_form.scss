@@ -1,0 +1,106 @@
+// 입력. .input 하나 또는 .field(라벨·입력·도움말·오류) 묶음.
+@use "../tokens" as *;
+
+%control {
+  width: 100%;
+  height: 38px;
+  padding: 0 space(3);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--panel);
+  transition:
+    border-color var(--t-fast),
+    box-shadow var(--t-fast);
+
+  &:focus {
+    border-color: var(--brand);
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
+  }
+
+  &[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+}
+
+.input {
+  @extend %control;
+
+  &.sm {
+    height: 30px;
+  }
+}
+
+textarea.input {
+  height: auto;
+  min-height: 80px;
+  padding: space(2.5) space(3);
+  resize: vertical;
+}
+
+.field {
+  display: grid;
+  gap: space(1.5);
+  margin-bottom: space(3.5);
+
+  input,
+  textarea,
+  select {
+    @extend %control;
+  }
+
+  textarea {
+    height: auto;
+    min-height: 80px;
+    padding: space(2.5) space(3);
+    resize: vertical;
+  }
+
+  label {
+    color: var(--ink-2);
+    font-size: font-size("xs");
+    font-weight: weight("semibold");
+  }
+
+  .hint {
+    color: var(--ink-3);
+    font-size: font-size("xs");
+  }
+
+  .hint.counter {
+    text-align: right;
+  }
+
+  .error {
+    color: var(--danger);
+    font-size: font-size("xs");
+  }
+}
+
+.form-error {
+  margin: space(1) 0 0;
+  color: var(--danger);
+  font-size: font-size("xs");
+}
+
+// 한 줄 입력 + 단추(태그 추가 등)
+.inline-form {
+  display: flex;
+  gap: space(1.5);
+  margin-top: space(2);
+}
+
+.color-field {
+  display: flex;
+  align-items: center;
+  gap: space(2.5);
+
+  input[type="color"] {
+    width: 40px;
+    height: 32px;
+    padding: space(0.5);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--panel);
+  }
+}

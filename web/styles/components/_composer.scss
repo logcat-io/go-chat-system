@@ -1,0 +1,182 @@
+// 작성칸: 도구 줄, 입력 줄(입력 칸 + 보내기), 첨부 표시, 빠른 답변 팝업, 끌어 놓기 영역.
+@use "../tokens" as *;
+@use "../tools" as *;
+
+.composer {
+  position: relative;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+
+  &.internal {
+    border-top-color: var(--memo-line);
+    background: var(--memo);
+  }
+
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: space(1);
+    min-width: 0;
+    padding: space(1.5) space(2.5) 0;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: space(2);
+    padding: space(1.5) space(2.5) space(2.5);
+  }
+
+  textarea {
+    flex: 1;
+    min-width: 0;
+    min-height: 38px;
+    max-height: 160px;
+    padding: space(2) space(0.5);
+    border: 0;
+    outline: none;
+    background: transparent;
+    resize: none;
+
+    &::placeholder {
+      color: var(--ink-3);
+    }
+  }
+
+  .send {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-circle);
+    background: var(--brand);
+    color: var(--brand-ink);
+
+    &:hover {
+      background: var(--brand-strong);
+    }
+
+    &:disabled {
+      background: var(--line);
+      color: var(--ink-3);
+    }
+  }
+
+  // 첨부 표시(올리는 중·보낼 준비). 긴 파일 이름은 한 줄로 자른다.
+  .attach-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: space(1.5);
+    max-width: 100%;
+    padding: space(1) space(2);
+    border-radius: var(--r);
+    background: var(--line-2);
+    color: var(--ink-2);
+    font-size: font-size("xs");
+
+    .attach-pill-name {
+      @include truncate;
+    }
+
+    button {
+      flex: none;
+    }
+  }
+}
+
+// 상자형 작성칸(.composer.composer-boxed, 위젯): 위 경계선이 없고 입력 줄 전체가 연한 테두리 상자 하나다.
+// 초점이 들어오면 테두리가 진한 회색(--ink-3)이 되고 같은 색 바깥 테 1px 를 더해 2px 로 보인다 — 관리자 색이 아니라 회색 계열이고,
+// 둘레 바탕과 3:1 이상이라(WCAG 1.4.11, 밝은 5.74:1·어두운 6.20:1) 키보드 초점이 보인다. 칸 크기는 바뀌지 않는다(정책 659).
+// 첨부 표시는 흰 바탕·회색 테두리 카드다.
+.composer.composer-boxed {
+  border-top: 0;
+
+  .input-row {
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--panel);
+    transition:
+      border-color var(--t-fast),
+      box-shadow var(--t-fast);
+
+    &:focus-within {
+      border-color: var(--ink-3);
+      box-shadow: 0 0 0 1px var(--ink-3);
+    }
+  }
+
+  // 입력칸 안의 초점은 상자의 테두리가 보인다
+  textarea:focus-visible {
+    outline: none;
+  }
+
+  .attach-pill {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+  }
+}
+
+.dropzone {
+  position: relative;
+
+  &.over::after {
+    position: absolute;
+    inset: space(2);
+    z-index: z("raised");
+    display: grid;
+    place-items: center;
+    border: 2px dashed var(--brand);
+    border-radius: var(--r);
+    background: color-mix(in srgb, var(--brand) 6%, transparent);
+    color: var(--brand-text);
+    content: "여기에 놓아 파일 보내기";
+    font-weight: weight("bold");
+    pointer-events: none;
+  }
+}
+
+.snippet-pop {
+  position: absolute;
+  right: space(2.5);
+  bottom: 100%;
+  left: space(2.5);
+  z-index: z("raised") + 5;
+  max-height: 220px;
+  margin-bottom: space(1.5);
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--panel);
+  box-shadow: var(--shadow-md);
+
+  button {
+    display: block;
+    width: 100%;
+    padding: space(2) space(3);
+    text-align: left;
+
+    &:hover,
+    &.active {
+      background: var(--brand-soft);
+    }
+  }
+
+  .sc {
+    color: var(--brand-text);
+    font-size: font-size("xs");
+    font-weight: weight("bold");
+  }
+
+  .tt {
+    font-size: font-size("sm");
+  }
+
+  .bd {
+    @include truncate;
+
+    color: var(--ink-3);
+    font-size: font-size("xs");
+  }
+}

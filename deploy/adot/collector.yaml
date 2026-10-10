@@ -1,0 +1,68 @@
+# ADOT 컬렉터 사이드카 설정. SSM 파라미터 /chat/<env>/adot-config 에 이 파일 내용을 그대로 넣고,
+# 태스크 정의가 AOT_CONFIG_CONTENT 로 주입한다. ${env:CHAT_ENV} 는 태스크 정의의 adot 컨테이너 환경 변수다.
+#
+# 앱은 같은 태스크의 127.0.0.1:4318(OTLP/HTTP) 로 보낸다. 바깥에서 이 포트에 닿을 길은 없다(보안 그룹이 8080 만 연다).
+# 지표 이름(chat.*)은 internal/telemetry/metrics.go 와 design.md D33 이 정본이다. 바뀌면 metric_declarations 를 맞춘다.
+
+extensions:
+  # /healthcheck 바이너리(태스크 정의 healthCheck)가 이 포트를 본다.
+  health_check:
+    endpoint: 127.0.0.1:13133
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 127.0.0.1:4317
+      http:
+        endpoint: 127.0.0.1:4318
+
+processors:
+  # 컬렉터가 태스크 메모리를 다 먹지 않게 막는다. 태스크 메모리 2GB 중 사이드카 몫은 256~512MB 다.
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 300
+    spike_limit_mib: 80
+  resourcedetection:
+    detectors: [env, ecs]
+    timeout: 2s
+    override: false
+  batch/traces:
+    timeout: 1s
+    send_batch_size: 256
+  batch/metrics:
+    timeout: 60s
+
+exporters:
+  awsxray:
+    region: ap-northeast-2
+    # 로그와 트레이스를 잇는 키(D30). X-Ray 콘솔에서 이 값으로 거른다.
+    # 앱이 스팬에 싣는 대화 키는 chat.conversation_id 하나다(realtime 의 WebSocket 프레임 스팬). workspace_id 는 스팬에 없다.
+    indexed_attributes:
+      - chat.conversation_id
+  awsemf:
+    region: ap-northeast-2
+    namespace: GoChat/${env:CHAT_ENV}
+    log_group_name: /chat/${env:CHAT_ENV}/metrics
+    log_stream_name: "{TaskId}"
+    # 리소스 속성(태스크 ARN 등)을 차원으로 올리지 않는다. 태스크마다 지표가 갈라지면 알람이 태스크 수만큼 필요해진다.
+    resource_to_telemetry_conversion:
+      enabled: false
+    dimension_rollup_option: NoDimensionRollup
+    # chat.* 만 내보낸다(D33 의 지표 목록).
+    metric_declarations:
+      - dimensions: [[]]
+        metric_name_selectors:
+          - "^chat\\..*"
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resourcedetection, batch/traces]
+      exporters: [awsxray]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, resourcedetection, batch/metrics]
+      exporters: [awsemf]

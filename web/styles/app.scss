@@ -1,0 +1,27 @@
+/*! 생성된 파일이다. 고치려면 web/styles/ 의 SCSS 를 고치고 `npm run css` 를 돌린다(D44). */
+
+// 공용 디자인 시스템 + 상담원 데스크. 모든 화면(/, /desk, /widget)이 먼저 읽는다.
+// 층은 Bootstrap 과 같은 순서다 — 토큰(변수) → 도구(함수·믹스인) → 기본 → 컴포넌트 → 배치 → 유틸리티.
+// 아래 층만 위 층을 쓴다. 위젯 전용은 widget.scss 가 따로 컴파일한다(body.widget 아래).
+
+@use "base/fonts";
+@use "base/root";
+@use "base/reset";
+@use "base/typography";
+@use "components/button";
+@use "components/form";
+@use "components/chip";
+@use "components/avatar";
+@use "components/surface";
+@use "components/overlay";
+@use "components/navigation";
+@use "components/message";
+@use "components/attachment";
+@use "components/composer";
+@use "components/rating";
+@use "components/metric";
+@use "layouts/desk";
+@use "layouts/settings";
+
+// 유틸리티는 맨 끝이다 — 컴포넌트 값을 덮을 수 있어야 한다(Bootstrap 과 같다).
+@use "base/utilities";

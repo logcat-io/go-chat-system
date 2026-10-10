@@ -1,0 +1,102 @@
+name: go-chat-system
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: go-chat-db
+    environment:
+      POSTGRES_USER: chat
+      POSTGRES_PASSWORD: chat
+      POSTGRES_DB: chat
+      # 유실 금지가 1순위라 커밋 동기화를 끄지 않는다. 기본값(on)을 명시해 둔다.
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    command: >
+      postgres
+      -c fsync=on
+      -c synchronous_commit=on
+      -c max_connections=300
+    ports:
+      - "56432:5432"
+    volumes:
+      - go-chat-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chat -d chat"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # 첨부 저장소. S3 와 같은 API 라 운영(AWS S3)과 같은 코드가 돈다. 콘솔은 http://localhost:59101 (chat / chatchat123)
+  minio:
+    # Docker Hub 의 minio/minio 는 더 받을 수 없다. Chainguard 가 빌드한 이미지를 쓴다.
+    # 태그 없이 받으면 받을 때마다 다른 판이 올 수 있어 다이제스트로 고정한다.
+    image: cgr.dev/chainguard/minio@sha256:4cf4831a2bbcf13ddca09c1cbcc9faff716dd3c4247e0babc32864b8ee8e0034
+    container_name: go-chat-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: chat
+      MINIO_ROOT_PASSWORD: chatchat123
+    ports:
+      - "59100:9000"
+      - "59101:9001"
+    volumes:
+      - go-chat-minio:/data
+    # 이미지에 셸이 없어 상태 검사를 걸지 않는다. 서버는 뜰 때 저장소가 받을 때까지 잠깐 기다린다.
+
+  # 앱 컨테이너. 로컬 개발은 `make run` 으로 호스트에서 띄우고, 이건 배포 모양 확인용이다.
+  #   docker compose --profile app up --build
+  # 배포의 앞 단계와 같다(D49): 같은 이미지로 migrate 를 한 번 돌리고 끝난 뒤에 앱을 띄운다. 서버는 스스로 마이그레이션하지 않는다.
+  migrate:
+    build: .
+    profiles: ["app"]
+    command: ["/app/server", "migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      CHAT_DATABASE_URL: postgres://chat:chat@db:5432/chat?sslmode=disable
+      CHAT_SEED_DEMO: ${CHAT_SEED_DEMO:-true}
+      CHAT_SEED_AGENT_PASSWORD: ${CHAT_SEED_AGENT_PASSWORD:-chat1234}
+      CHAT_MEMBER_SECRET: ${CHAT_MEMBER_SECRET:-}
+
+  app:
+    build: .
+    profiles: ["app"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      minio:
+        condition: service_started
+    environment:
+      CHAT_DATABASE_URL: postgres://chat:chat@db:5432/chat?sslmode=disable
+      CHAT_PUBLIC_URL: http://localhost:8090
+      CHAT_STORAGE: s3
+      CHAT_S3_ENDPOINT: http://minio:9000
+      # 브라우저는 호스트의 포트로 저장소를 부른다. 서명에 호스트가 들어가서 서버용 주소와 따로 준다.
+      CHAT_S3_PUBLIC_ENDPOINT: http://localhost:59100
+      CHAT_S3_BUCKET: chat-attachments
+      CHAT_S3_ACCESS_KEY: chat
+      CHAT_S3_SECRET_KEY: chatchat123
+      CHAT_S3_CREATE_BUCKET: "true"
+    ports:
+      - "8090:8080"
+
+  # 관측 확인용 OpenTelemetry 컬렉터(D33). profile 이라 기본 `docker compose up` 에는 뜨지 않는다.
+  #   docker compose --profile otel up -d otel-collector
+  #   OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:55318 go run ./cmd/server
+  # 호스트 포트는 OTEL_COLLECTOR_GRPC_PORT·OTEL_COLLECTOR_HTTP_PORT 로 바꾼다. 받은 것은 `docker logs -f go-chat-otel` 로 본다.
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.161.0
+    container_name: go-chat-otel
+    profiles: ["otel"]
+    command: ["--config=/etc/otelcol-contrib/config.yml"]
+    environment:
+      OTEL_DEBUG_VERBOSITY: ${OTEL_DEBUG_VERBOSITY:-basic}
+    volumes:
+      - ./deploy/otel-collector.yml:/etc/otelcol-contrib/config.yml:ro
+    ports:
+      - "${OTEL_COLLECTOR_GRPC_PORT:-55317}:4317"
+      - "${OTEL_COLLECTOR_HTTP_PORT:-55318}:4318"
+
+volumes:
+  go-chat-pgdata:
+  go-chat-minio:

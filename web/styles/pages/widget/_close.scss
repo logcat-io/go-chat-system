@@ -1,0 +1,139 @@
+// 고객이 상담을 직접 종료한다(D48). 대화 머리의 "상담 종료" 글자 단추, 확인 창의 막힘 안내, 고객이 닫은 상담의 아래 칸.
+// 머리의 보조 단추는 회색 외곽선, 끝난 상담의 아래 칸은 회색 안내 한 줄과 채움 단추 하나다. 모서리는 4px 기준(D44).
+@use "../../tokens" as *;
+@use "../../tools" as *;
+
+body.widget {
+  // 머리의 글자 단추. 닫기(×) 옆이라 눈에 덜 띄는 회색 외곽선이고, 누르면 확인 창을 한 번 거친다(잘못 누름 방지).
+  // 보이는 상자는 32px 이고 누르는 칸은 위아래로 넓혀 44px 이다(정책 623).
+  .w-end-btn {
+    position: relative;
+    flex: none;
+    height: 32px;
+    padding: 0 space(2.5);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--panel);
+    color: var(--ink-2);
+    font-size: font-size("sm");
+    font-weight: weight("semibold");
+    white-space: nowrap;
+    transition: background var(--t-fast);
+
+    &::after {
+      position: absolute;
+      inset: -(space(1.5)) 0;
+      content: "";
+    }
+
+    &:active {
+      background: var(--line-2);
+    }
+  }
+
+  @media (hover: hover) {
+    .w-end-btn:hover {
+      background: var(--line-2);
+    }
+  }
+
+  // 좁은 폭(320px 휴대폰)의 대화 머리. 로고·이름·상담 종료·닫기가 다 들어가지 않아 이름이 "고객…" 으로 잘렸다(감사 26).
+  // 대화 화면에서만 로고를 빼고 상담 종료의 옆 여백을 줄여 이름에 자리를 준다. 단추의 글자와 누르는 칸(44px)은 그대로다.
+  @include below("narrow") {
+    .messenger[data-view="chat"] .w-head-avatar {
+      display: none;
+    }
+
+    .w-end-btn {
+      padding: 0 space(2);
+    }
+  }
+
+  // 확인 창 안의 막힘 안내 — 보내지 못한 글이 있고 연결이 끊겨 지금은 닫을 수 없다.
+  .modal .confirm-blocked {
+    margin: space(3) 0 0;
+    padding: space(2.5) space(3);
+    border-radius: var(--r);
+    background: var(--warn-soft);
+    color: var(--warn-ink);
+    font-size: font-size("sm");
+  }
+
+  // 고객이 닫은 상담의 아래 칸. 입력창 대신이다 — 이 상담에는 더 쓰지 않고 새 문의로 간다.
+  .w-closed-foot {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: space(2.5);
+    padding: space(3) space(4) space(4);
+    border-top: 1px solid var(--w-edge);
+    background: var(--panel);
+    text-align: center;
+
+    &[hidden] {
+      display: none;
+    }
+
+    p {
+      margin: 0;
+      color: var(--ink-3);
+      font-size: font-size("sm");
+    }
+
+    .btn {
+      font-weight: weight("bold");
+    }
+  }
+
+  // 닫힌 뒤 늦게 나간 글(closed_by_customer 로 거절)을 돌려주는 칸. 아래 칸(입력창 또는 새 문의하기) 바로 위에 본문을 그대로 보인다.
+  // 닫힌 상담이면 새 문의하기 위, 상담원이 다시 열었는데 입력칸에 쓰던 글이 있어 옮기지 못했으면 입력창 위다(감사 27).
+  // 경고 톤(노란 바탕)이고 왼쪽 정렬이다 — 사람이 쓴 글이라 가운데 정렬로 읽히지 않게.
+  .w-returned {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: space(1.5);
+    margin: space(2) space(4);
+    padding: space(3);
+    border-radius: var(--r);
+    background: var(--warn-soft);
+    text-align: left;
+
+    &[hidden] {
+      display: none;
+    }
+
+    p {
+      margin: 0;
+      font-size: font-size("sm");
+    }
+
+    .w-returned-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: space(2);
+    }
+
+    .w-returned-title {
+      color: var(--warn-ink);
+      font-weight: weight("bold");
+    }
+
+    .w-returned-body {
+      max-height: 6.5em;
+      overflow-y: auto;
+      color: var(--ink);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .w-returned-hint {
+      color: var(--ink-2);
+      font-size: font-size("xs");
+    }
+
+    .btn {
+      font-weight: weight("semibold");
+    }
+  }
+}

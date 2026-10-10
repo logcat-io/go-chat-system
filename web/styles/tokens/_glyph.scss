@@ -1,0 +1,17 @@
+@use "sass:map";
+
+// 평면 글리프. 모양만 쓰고 색은 바탕(background)이 정한다(mask, tools/_mixins.scss 의 glyph()).
+// 같은 파일 안의 data: 주소라 바깥 주소를 부르지 않는다(D38 — 위젯은 고객 사이트 안의 iframe 이다).
+$glyphs: (
+  "chat": "%3Cpath d='M12 3c-4.97 0-9 3.36-9 7.5 0 2.3 1.25 4.35 3.2 5.7L5.5 21l4.2-2.2c.74.13 1.51.2 2.3.2 4.97 0 9-3.36 9-7.5S16.97 3 12 3z'/%3E",
+  "check": "%3Cpath d='M4.5 12.5l5 5L19.5 7' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E",
+  "plus": "%3Cpath d='M12 5v14M5 12h14' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E",
+  "chevron-down": "%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E",
+  "chevron-left": "%3Cpath d='M15 6l-6 6 6 6' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E",
+  "menu": "%3Cpath d='M4 7h16M4 12h16M4 17h16' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E",
+  "chevron-right": "%3Cpath d='M9 6l6 6-6 6' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E",
+);
+
+@function glyph-url($name) {
+  @return url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E#{map.get($glyphs, $name)}%3C/svg%3E");
+}

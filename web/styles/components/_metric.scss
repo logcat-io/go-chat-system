@@ -1,0 +1,113 @@
+// 지표 화면(D45): 숫자 카드 격자와 기간 막대. 카드는 흰 판·연한 테두리·4px 모서리(D44)이고 그림자는 없다.
+@use "../tokens" as *;
+@use "../tools" as *;
+
+.metrics-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: space(3);
+  margin-bottom: space(4);
+}
+
+.metrics-range {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: space(2);
+
+  .field {
+    margin: 0;
+  }
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: space(3);
+  margin-bottom: space(4);
+}
+
+.stat {
+  display: grid;
+  align-content: start;
+  gap: space(1);
+  min-width: 0;
+  padding: space(4);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--panel);
+}
+
+.stat-label {
+  color: var(--ink-3);
+  font-size: font-size("xs");
+  font-weight: weight("semibold");
+}
+
+.stat-value {
+  color: var(--ink);
+  font-size: font-size("2xl");
+  font-weight: weight("bold");
+  letter-spacing: var(--tracking-tight);
+  line-height: leading("tight");
+  font-variant-numeric: tabular-nums;
+
+  // 값이 없을 때(—)는 숫자처럼 크게 보이지 않게 흐리게 둔다
+  &.is-empty {
+    color: var(--ink-4);
+  }
+}
+
+.stat-sub {
+  color: var(--ink-3);
+  font-size: font-size("xs");
+  overflow-wrap: anywhere;
+}
+
+// 처리 주체 분포: 점과 숫자의 한 줄 묶음
+.stat-split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: space(1) space(3);
+  color: var(--ink-2);
+  font-size: font-size("xs");
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: space(1);
+  }
+
+  .dot {
+    background: var(--ink-4);
+  }
+
+  .is-agent .dot {
+    background: var(--brand);
+  }
+
+  .is-ai .dot {
+    background: var(--ok);
+  }
+
+  // 고객 자체 해결(D48) — 상담원 없이 끝났다. AI 와 같이 처리율의 분자지만 사람(고객)이 끝낸 것이라 다른 색이다.
+  .is-self .dot {
+    background: var(--warn);
+  }
+}
+
+// 지표 표는 열이 많아 좁은 화면에서 가로로 넘긴다(칸 안에서만).
+.table-scroll {
+  overflow-x: auto;
+
+  .table td,
+  .table th {
+    white-space: nowrap;
+  }
+}
+
+// 지표 화면은 표가 넓어 설정 본문의 기본 폭(720px)보다 넓게 쓴다.
+.settings-body > section.metrics-page {
+  max-width: 1080px;
+}

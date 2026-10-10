@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadAppSecret",
+      "Effect": "Allow",
+      "Action": ["secretsmanager:GetSecretValue"],
+      "Resource": "arn:aws:secretsmanager:ap-northeast-2:${ACCOUNT_ID}:secret:chat/${ENV}-*"
+    },
+    {
+      "Sid": "ReadAdotConfig",
+      "Effect": "Allow",
+      "Action": ["ssm:GetParameters"],
+      "Resource": "arn:aws:ssm:ap-northeast-2:${ACCOUNT_ID}:parameter/chat/${ENV}/adot-config"
+    }
+  ]
+}

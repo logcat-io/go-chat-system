@@ -1,0 +1,158 @@
+[
+  {
+    "filterName": "error-count",
+    "filterPattern": "{ $.msg = \"http.request\" && $.level = \"ERROR\" }",
+    "metricTransformations": [
+      {
+        "metricName": "ErrorCount",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "request-count",
+    "filterPattern": "{ $.msg = \"http.request\" }",
+    "metricTransformations": [
+      {
+        "metricName": "RequestCount",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "other-errors",
+    "filterPattern": "{ $.level = \"ERROR\" && $.msg != \"http.request\" && $.msg != \"http.failed\" && $.msg != \"panic.recovered\" && $.msg != \"message.rejected\" && $.msg != \"upload.rejected\" && $.msg != \"rating.rejected\" && $.msg != \"agent.login_failed\" && $.msg != \"files.save_failed\" }",
+    "metricTransformations": [
+      {
+        "metricName": "OtherErrorCount",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "panics",
+    "filterPattern": "{ $.msg = \"panic.recovered\" }",
+    "metricTransformations": [
+      {
+        "metricName": "PanicCount",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "notify-failed",
+    "filterPattern": "{ $.msg = \"notify.failed\" }",
+    "metricTransformations": [
+      {
+        "metricName": "NotifyFailed",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "listener-reconnect",
+    "filterPattern": "{ $.msg = \"listener.reconnect\" }",
+    "metricTransformations": [
+      {
+        "metricName": "ListenerReconnect",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "s3-creds-refresh",
+    "filterPattern": "{ $.msg = \"s3.credentials_refresh_failed\" }",
+    "metricTransformations": [
+      {
+        "metricName": "S3CredentialsRefreshFailed",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "ws-closed-1006",
+    "filterPattern": "{ $.msg = \"ws.closed\" && $.close_code = 1006 }",
+    "metricTransformations": [
+      {
+        "metricName": "WsAbnormalClose",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "shutdown-left",
+    "filterPattern": "{ $.msg = \"shutdown.ws_closed\" && $.left > 0 }",
+    "metricTransformations": [
+      {
+        "metricName": "ShutdownWsLeft",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "ws-db-timeout",
+    "filterPattern": "{ $.msg = \"ws.db_timeout\" }",
+    "metricTransformations": [
+      {
+        "metricName": "WsDbTimeout",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "ws-deliver-failed",
+    "filterPattern": "{ $.msg = \"ws.deliver_failed\" }",
+    "metricTransformations": [
+      {
+        "metricName": "WsDeliverFailed",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "ws-revalidate-fail",
+    "filterPattern": "{ $.msg = \"ws.revalidate_failed\" }",
+    "metricTransformations": [
+      {
+        "metricName": "WsRevalidateFailed",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  },
+  {
+    "filterName": "schema-behind",
+    "filterPattern": "{ $.msg = \"schema.behind\" }",
+    "metricTransformations": [
+      {
+        "metricName": "SchemaBehind",
+        "metricNamespace": "GoChat/${ENV}/Logs",
+        "metricValue": "1",
+        "defaultValue": 0
+      }
+    ]
+  }
+]

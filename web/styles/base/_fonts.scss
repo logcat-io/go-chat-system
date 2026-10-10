@@ -1,0 +1,11 @@
+// 글꼴 파일(D41 보완). 제목의 라틴 글자·숫자만 Sora(SIL OFL 1.1, web/assets/fonts/LICENSE)로 쓰고 이 서버에서 준다 — 바깥 CDN 에 기대지 않는다.
+// 라틴 부분 집합 가변 글꼴 하나(34KB)다. 한글은 이 글꼴에 없어 --display 의 다음 글꼴(Pretendard·시스템 글꼴)로 그린다.
+// 본문 Pretendard 는 싣지 않는다 — 한글 가변 글꼴이 2MB 쯤이라 위젯을 여는 고객마다 받게 할 수 없다. 설치된 기기에서만 쓴다.
+@font-face {
+  font-family: Sora;
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("/fonts/sora-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}

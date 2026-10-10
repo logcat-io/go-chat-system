@@ -1,0 +1,102 @@
+# golangci-lint v2 설정. 고정 버전은 scripts/verify.sh 의 GOLANGCI_LINT_VERSION 이다(2.14.0).
+# 기준: 린터 하나가 이 리포에서 잡아 줄 결함이 있을 때만 켠다. 취향(모양) 지적만 내는 린터는 켜지 않는다.
+# 끈 린터와 그 이유는 맨 아래 "켜지 않은 것" 에 적는다. 지적을 무시할 때는 줄에 //nolint:<린터> // <이유> 를 단다.
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  # standard = errcheck, govet, ineffassign, staticcheck, unused.
+  default: standard
+  enable:
+    # 응답 본문을 안 닫으면 커넥션이 풀로 돌아가지 않는다. s3store·ollama·자격 증명 조회가 HTTP 를 부른다.
+    - bodyclose
+    # 컨텍스트 없는 HTTP 요청·리슨은 종료(D32)와 작업 시한을 못 받는다.
+    - noctx
+    # 감싼 오류를 == 나 타입 단언으로 보면 놓친다. 앱은 errors.Is 로 정책을 가른다.
+    - errorlint
+    # 보안 지적. 파일 경로·정수 변환·약한 난수처럼 오탐이 있는 규칙은 줄마다 이유를 달아 넘긴다.
+    - gosec
+    # 버그 꼴(defer 를 건너뛰는 os.Exit, 맵 키 공백, 자기 대입 등). 기본 검사 묶음만 쓴다.
+    - gocritic
+    # err != nil 인데 nil 을 돌려주는 실수. 메시지를 잃는 길이 된다.
+    - nilerr
+    # time.Duration 끼리 곱하는 실수(시한이 터무니없이 길어진다).
+    - durationcheck
+    # 열거형 switch 의 빠진 경우. 상태(core.State)·보낸이 종류가 늘면 여기서 걸린다. default 가 있으면 다 다룬 것으로 본다.
+    - exhaustive
+    # 검사 없는 타입 단언은 패닉이다. 운영 코드만 본다(테스트의 패닉은 실패로 드러난다).
+    - forcetypeassert
+    # max·print 같은 내장 이름을 가리면 같은 함수 안에서 내장을 못 쓴다.
+    - predeclared
+    # 쓸데없는 형 변환·버려지는 대입·패키지 변수 재대입. 실수의 흔적이다.
+    - unconvert
+    - wastedassign
+    - reassign
+    # 루프 안에서 ctx 를 덮어 써 컨텍스트가 쌓이는 실수.
+    - fatcontext
+    - usestdlibvars
+    # //nolint 의 꼴을 지킨다. 린터 이름(require-specific)과 이유(require-explanation)가 없으면, 또는 더는 아무것도 막지 않는
+    # nolint 가 남으면(allow-unused: false) 실패한다 — 넘긴 지적이 왜 괜찮은지 줄마다 남고, 고친 뒤의 낡은 nolint 가 다른 지적을 덮지 않는다.
+    - nolintlint
+
+  settings:
+    errcheck:
+      # 응답 본문 같은 읽기 쪽 Close 의 오류는 할 일이 없다. 쓰기 쪽(*os.File)은 여기서 빼지 않는다 — 닫기 실패가 쓰기 실패다.
+      exclude-functions:
+        - (io.Closer).Close
+    exhaustive:
+      default-signifies-exhaustive: true
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+      allow-unused: false
+    gosec:
+      excludes:
+        # G104 는 errcheck 와 같은 지적이다.
+        - G104
+    staticcheck:
+      checks:
+        - all
+        # 기본에서 빼는 스타일 검사(golangci 기본과 같다). 한국어 주석이라 ST1000·ST1020~22 의 문장 꼴이 맞지 않는다.
+        - -ST1000
+        - -ST1003
+        - -ST1016
+        - -ST1020
+        - -ST1021
+        - -ST1022
+        # 드모르간 바꿔 쓰기 제안은 취향이다. 지금 꼴이 정책 문장과 같은 순서로 읽힌다.
+        - -QF1001
+        # 임베드한 필드의 메서드를 g.Store.Remove 처럼 부르는 곳은 같은 타입이 일부 메서드를 덮어써서 일부러 구분한 것이다.
+        - -QF1008
+
+  exclusions:
+    generated: strict
+    rules:
+      # 테스트·테스트 지원·부하 측정 도구는 배포되지 않는다. 아래 린터는 운영 코드에서만 뜻이 있다.
+      # - gosec: 테스트의 파일 권한·httptest 주소·약한 난수는 위협이 아니다.
+      # - noctx·bodyclose: 하네스 함수가 응답을 돌려주고 부른 쪽이 닫는다. bodyclose 는 함수 경계를 못 따라간다.
+      # - forcetypeassert: 테스트의 패닉은 실패로 보인다.
+      - path: (_test\.go|internal/testsupport/|cmd/loadtest/)
+        linters: [gosec, noctx, bodyclose, forcetypeassert]
+      # 테스트에서 연결·트랜잭션 정리(Close·CloseNow·Rollback)의 오류는 볼 것이 없다. 다른 errcheck 지적은 그대로 본다.
+      - path: (_test\.go|internal/testsupport/|cmd/loadtest/)
+        linters: [errcheck]
+        text: "`[^`]*\\.(Close|CloseNow|Rollback)` is not checked"
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+# 켜지 않은 것과 이유
+# - contextcheck: 처음 돌렸을 때 124건, 거의 다 오탐이었다. 요청 로그 ctx 를 ResponseWriter 의 스코프로 나르고(requestLogCtx(w)),
+#   종료(D32)는 일부러 새 ctx 로 돈다. 함수 경계를 넘는 추정이라 nolint 가 백 줄 넘게 붙는다. noctx 가 바깥 호출 쪽을 맡는다.
+# - spancheck: 스팬을 pgx 트레이서 훅(TraceQueryStart/End)·동적 트레이서처럼 연 함수와 다른 곳에서 닫는다. 지적 3건이 전부 그 꼴이었다.
+# - sloglint: 기본 지적이 테스트의 slog.DiscardHandler 제안뿐이었다. 바꾸면 테스트에서 로그 인자를 아예 안 만든다(다른 동작).
+#   로그 규칙(D30, 원문 금지)은 internal/archtest 가 타입까지 보고 막는다.
+# - errchkjson: errcheck 가 안 받은 오류를 잡는다. `_ =` 로 일부러 버린 곳(이미 헤더를 보낸 응답 쓰기)만 남았다.
+# - misspell·godot·asciicheck 류: 주석과 테스트 이름이 한국어다.
+# - intrange·perfsprint·prealloc·unparam·errname·thelper·musttag: 모양 제안이다. 결함을 잡지 않는다.
+# - rowserrcheck·sqlclosecheck: database/sql 용이다. 이 리포는 pgx 를 쓴다.

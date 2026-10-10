@@ -1,0 +1,55 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AttachmentsBucketList",
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket"],
+      "Resource": "arn:aws:s3:::${S3_BUCKET}"
+    },
+    {
+      "Sid": "AttachmentsObjects",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::${S3_BUCKET}/*"
+    },
+    {
+      "Sid": "XRayWrite",
+      "Effect": "Allow",
+      "Action": [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords",
+        "xray:GetSamplingRules",
+        "xray:GetSamplingTargets",
+        "xray:GetSamplingStatisticSummaries"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EmfMetricsLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams",
+        "logs:DescribeLogGroups"
+      ],
+      "Resource": [
+        "arn:aws:logs:ap-northeast-2:${ACCOUNT_ID}:log-group:/chat/${ENV}/metrics",
+        "arn:aws:logs:ap-northeast-2:${ACCOUNT_ID}:log-group:/chat/${ENV}/metrics:*"
+      ]
+    },
+    {
+      "Sid": "EcsExec",
+      "Effect": "Allow",
+      "Action": [
+        "ssmmessages:CreateControlChannel",
+        "ssmmessages:CreateDataChannel",
+        "ssmmessages:OpenControlChannel",
+        "ssmmessages:OpenDataChannel"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

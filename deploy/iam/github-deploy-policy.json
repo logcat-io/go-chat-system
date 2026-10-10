@@ -1,0 +1,60 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "EcrLogin",
+      "Effect": "Allow",
+      "Action": ["ecr:GetAuthorizationToken"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EcrPush",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
+        "ecr:InitiateLayerUpload",
+        "ecr:UploadLayerPart",
+        "ecr:CompleteLayerUpload",
+        "ecr:PutImage",
+        "ecr:DescribeImages"
+      ],
+      "Resource": "arn:aws:ecr:ap-northeast-2:${ACCOUNT_ID}:repository/go-chat-server"
+    },
+    {
+      "Sid": "EcsTaskDefinition",
+      "Effect": "Allow",
+      "Action": ["ecs:RegisterTaskDefinition", "ecs:DescribeTaskDefinition", "ecs:TagResource"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EcsService",
+      "Effect": "Allow",
+      "Action": ["ecs:UpdateService", "ecs:DescribeServices"],
+      "Resource": "arn:aws:ecs:ap-northeast-2:${ACCOUNT_ID}:service/chat-${ENV}/chat-server"
+    },
+    {
+      "Sid": "EcsMigrateTask",
+      "Effect": "Allow",
+      "Action": ["ecs:RunTask"],
+      "Resource": "arn:aws:ecs:ap-northeast-2:${ACCOUNT_ID}:task-definition/chat-server-${ENV}:*",
+      "Condition": { "ArnEquals": { "ecs:cluster": "arn:aws:ecs:ap-northeast-2:${ACCOUNT_ID}:cluster/chat-${ENV}" } }
+    },
+    {
+      "Sid": "EcsMigrateTaskWatch",
+      "Effect": "Allow",
+      "Action": ["ecs:DescribeTasks"],
+      "Resource": "arn:aws:ecs:ap-northeast-2:${ACCOUNT_ID}:task/chat-${ENV}/*"
+    },
+    {
+      "Sid": "PassTaskRoles",
+      "Effect": "Allow",
+      "Action": ["iam:PassRole"],
+      "Resource": [
+        "arn:aws:iam::${ACCOUNT_ID}:role/chat-${ENV}-task-execution",
+        "arn:aws:iam::${ACCOUNT_ID}:role/chat-${ENV}-task"
+      ],
+      "Condition": { "StringEquals": { "iam:PassedToService": "ecs-tasks.amazonaws.com" } }
+    }
+  ]
+}

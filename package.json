@@ -1,0 +1,25 @@
+{
+  "name": "go-chat-system-web",
+  "private": true,
+  "description": "위젯·데스크 화면의 개발 도구(SCSS 디자인 시스템 빌드, 린트, 클라이언트 테스트). 서버 빌드와 실행에는 필요 없다 — 컴파일한 CSS 가 web/assets 에 있다.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "css": "node scripts/css.mjs",
+    "css:check": "node scripts/css.mjs --check",
+    "lint": "npm run lint:js && npm run lint:css",
+    "lint:js": "eslint --max-warnings 0 .",
+    "lint:css": "stylelint --max-warnings 0 \"web/styles/**/*.scss\"",
+    "test": "node --test web/assets/*.test.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.12.0",
+    "globals": "17.13.0",
+    "sass": "1.105.1",
+    "stylelint": "17.16.0",
+    "stylelint-config-standard-scss": "17.0.0"
+  }
+}
