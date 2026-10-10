@@ -78,4 +78,4 @@ go test -race -p 1 -count=1 ./internal/adapter/httpapi/ -run '<이름>'   # 부�
 ## 커밋
 
 logcat 이 요청할 때만 한다. 기본 브랜치는 `master`, 리모트는 `origin` = `git@github.com:logcat-io/go-chat-system.git`(비공개).
-메시지는 영어 Conventional Commits(`feat:`, `fix:`, `chore(deploy):` …) 제목에 본문을 붙인다. 2026-10-07 이전 한국어 커밋은 이 형식으로 다시 썼고 원본은 `refs/original/korean-commits/master` 에 있다.
+메시지는 영어 Conventional Commits(`feat:`, `fix:`, `chore(deploy):` …) 제목에 본문을 붙인다. 이력은 2026-10-11 에 새로 시작했다(첫 커밋 294b3c6). 그 전 이력은 이 저장소에 없다.
