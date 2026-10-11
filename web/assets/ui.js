@@ -26,7 +26,7 @@ export const initials = (name) => (name || "?").trim().slice(0, 1).toUpperCase()
 // 이름마다 같은 색이 나오게 해시한다. 글자 하나짜리 아바타가 전부 회색이면 구분이 안 된다.
 // 흰 이니셜이 얹히므로 여덟 색 모두 흰 글자 대비 5:1 이상이다(D41. 전에는 #f59f00 이 2.13:1 이었다).
 // 색은 디자인 시스템의 .avatar.tone-0~7 이 칠한다(web/styles/tokens/_color.scss 의 $avatar-tones, 순서까지 같다). 인라인 색을 쓰지 않는다.
-export const AVATAR_COLORS = ["#3b5bdb", "#c2410c", "#087f5b", "#9c36b5", "#c2255c", "#0b7285", "#8a5a00", "#6741d9"];
+export const AVATAR_COLORS = ["#b45309", "#9a3412", "#be123c", "#8a5a00", "#4d7c0f", "#6b5b3e", "#a3452c", "#7c2d12"];
 export function avatarTone(name) {
   let h = 0;
   for (const c of name || "") h = (h * 31 + c.charCodeAt(0)) >>> 0;

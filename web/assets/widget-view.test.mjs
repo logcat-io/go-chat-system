@@ -179,12 +179,12 @@ describe("위젯 스타일", () => {
     }
   });
 
-  test("인사 배너는 연한 관리자 색 바탕에 진한 제목과 본문색 글이다 — 관리자 색을 꽉 채우지 않는다", () => {
+  test("인사 배너는 크림 바탕에 진한 제목과 본문색 글이다 — 관리자 색을 깔지 않는다", () => {
     const hero = rules.filter((r) => r.selectors.includes("body.widget .w-hero"));
-    assert.ok(hero.some((r) => r.decls.background === "var(--brand-soft)"), "배너 바탕이 연한 관리자 색이 아니다");
+    assert.ok(hero.some((r) => r.decls.background === "var(--cream)"), "배너 바탕이 크림이 아니다");
     for (const r of rules.filter((x) => x.selectors.some((sel) => /^body\.widget \.w-hero( |$)/.test(sel)))) {
       for (const prop of ["background", "background-color"]) {
-        if (r.decls[prop] !== undefined) assert.doesNotMatch(r.decls[prop], /var\(--brand(-strong)?\)/, `${r.selectors.join(",")} 가 관리자 색을 채운다`);
+        if (r.decls[prop] !== undefined) assert.doesNotMatch(r.decls[prop], /var\(--brand(-strong|-soft)?\)/, `${r.selectors.join(",")} 가 관리자 색을 채운다`);
       }
       if (r.decls.color !== undefined) assert.doesNotMatch(r.decls.color, /--brand-ink/, `${r.selectors.join(",")} 가 관리자 색 위 글자색을 쓴다(배너 바탕이 연하다)`);
     }
@@ -376,7 +376,7 @@ describe("위젯 머리·작성칸·알약 모양", () => {
   });
 
   // WCAG 1.4.11(비텍스트 대비): 초점 표시는 둘레 색과 3:1 이상이어야 한다. 연한 회색 테두리(--line)와 옅은 그림자는 1.1~1.3:1 이라 모자랐다(감사 18).
-  test("입력 상자는 초점이 오면 테두리가 진한 회색(--ink-3) 2px 로 바뀌고 밝은·어두운 테마 모두 둘레와 3:1 이상이다", () => {
+  test("입력 상자는 초점이 오면 테두리가 진한 회색(--ink-3) 2px 로 바뀌고 둘레와 3:1 이상이다", () => {
     const box = ruleFor(app, ".composer.composer-boxed .input-row")[0];
     assert.equal(box?.decls.border, "1px solid var(--line)");
     const focus = ruleFor(app, ".composer.composer-boxed .input-row:focus-within")[0];
@@ -388,20 +388,25 @@ describe("위젯 머리·작성칸·알약 모양", () => {
       if (!r.selectors.some((sel) => /input-row:focus-within$/.test(sel))) continue;
       assert.fail(`${r.selectors.join(",")} 가 초점 표시를 다시 정한다`);
     }
-    // 실제 색으로 잰다: 초점 테두리(--ink-3)와 상자 안·밖 바탕(--panel)의 대비, 밝은 테마는 :root, 어두운 테마는 위젯의 다시 정한 값
+    // 실제 색으로 잰다: 초점 테두리(--ink-3)와 상자 안·밖 바탕(--panel·--bg)의 대비. 테마는 :root 하나다
     const lum = (hex) => {
       const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
       return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
     };
     const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
     const root = app.find((r) => r.selectors.includes(":root")).decls;
-    const dark = rules.find((r) => r.media.includes("prefers-color-scheme: dark") && r.selectors.includes("body.widget")).decls;
-    for (const [theme, t] of [["밝은", root], ["어두운", dark]]) {
-      for (const around of ["--panel", "--bg"]) {
-        const v = ratio(t["--ink-3"], t[around]);
-        assert.ok(v >= 3, `${theme} 테마 초점 테두리 ${t["--ink-3"]} 와 ${around} ${t[around]} 대비 ${v.toFixed(2)}:1`);
-      }
+    for (const around of ["--panel", "--bg"]) {
+      const v = ratio(root["--ink-3"], root[around]);
+      assert.ok(v >= 3, `초점 테두리 ${root["--ink-3"]} 와 ${around} ${root[around]} 대비 ${v.toFixed(2)}:1`);
     }
+  });
+
+  test("위젯은 운영체제가 어두운 모드여도 흰 바탕이다", () => {
+    for (const css of [rules, app]) {
+      const dark = css.filter((r) => r.media.includes("prefers-color-scheme: dark"));
+      assert.deepEqual(dark.map((r) => r.selectors.join(",")), [], "어두운 모드에서 색을 다시 정하는 규칙이 있다");
+    }
+    assert.equal(app.find((r) => r.selectors.includes(":root")).decls["--bg"], "#ffffff");
   });
 
   test("홈의 질문 알약은 한 줄에 두 개씩 놓이고 폭이 모자라면 둘이 나눠 가진 뒤 말줄임표로 잘린다", () => {

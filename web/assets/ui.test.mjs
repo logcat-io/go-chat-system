@@ -215,7 +215,7 @@ describe("관리자 색의 글자 대비", () => {
       ["#e8590c", "#111111", "4.53", "3.58"],
       ["#0c64e8", "#ffffff", "5.25", "3.15"],
       ["#808080", "#111111", "4.16", "3.95"],
-      ["#6e6047", "#ffffff", "6.13", "2.72"], // 기본 색(D41)
+      ["#c2410c", "#ffffff", "5.18", "3.19"], // 기본 색(D41)
     ];
     for (const [hex, ink, picked, other] of cases) {
       const t = brandTokens(hex);
@@ -234,7 +234,7 @@ describe("관리자 색의 글자 대비", () => {
 
 describe("흰 바탕 위 관리자 색 글자", () => {
   test("관리자 색을 흰 바탕의 글자·아이콘으로 쓸 때는 흰 바탕 대비 4.5:1 이 되게 낮추고 충분히 진한 색은 그대로 쓴다", () => {
-    assert.equal(brandTokens("#6e6047").text, "#6e6047", "진한 색은 그대로다");
+    assert.equal(brandTokens("#c2410c").text, "#c2410c", "진한 색은 그대로다");
     const cases = [["#ffd43b", "#7f6a1d", "5.27"], ["#e8590c", "#c54c0a", "4.76"], ["#808080", "#737373", "4.74"]];
     for (const [hex, text, ratio] of cases) {
       const t = brandTokens(hex);
@@ -254,8 +254,8 @@ describe("기본 색의 글자 대비", () => {
     return m[1].toLowerCase();
   };
 
-  test("기본 관리자 색은 갈색 #6e6047 이고 그 어두운 끝과 글자색은 applyBrand 가 만드는 값과 같다", () => {
-    assert.equal(token("brand"), "#6e6047");
+  test("기본 관리자 색은 주황 #c2410c 이고 그 어두운 끝과 글자색은 applyBrand 가 만드는 값과 같다", () => {
+    assert.equal(token("brand"), "#c2410c");
     const t = brandTokens(token("brand"));
     assert.equal(token("brand-strong"), t.strong);
     assert.equal(token("brand-ink"), t.ink);

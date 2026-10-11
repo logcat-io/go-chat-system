@@ -15,16 +15,16 @@ body.widget {
     }
   }
 
-  // 인사 배너: 연한 관리자 색(틴트) 바탕에 진한 제목과 본문색 글(밝은 배너). 관리자 색을 꽉 채우지 않아
-  // 노랑·남색 같은 관리자 색에서도 가볍다. 일러스트는 넣지 않고 3D 아이콘(손 흔들기·상담원 자리의 헤드폰)만 여기에 쓴다.
+  // 인사 배너: 크림 바탕에 진한 제목과 본문색 글(밝은 배너). 관리자 색을 깔지 않아
+  // 주황·노랑·남색 같은 관리자 색에서도 분홍·탁한 틴트가 생기지 않는다. 일러스트는 넣지 않고 3D 아이콘(손 흔들기·상담원 자리의 헤드폰)만 여기에 쓴다.
   .w-hero {
     position: relative;
     padding: space(6) space(6) space(7);
     overflow: hidden;
-    background: var(--brand-soft);
+    background: var(--cream);
     color: var(--ink);
 
-    // 오른쪽 아래의 옅은 원 하나. 관리자 색을 조금 더 진하게 겹친다.
+    // 오른쪽 아래의 옅은 원 하나. 크림보다 조금 진한 모래색을 겹친다.
     &::after {
       position: absolute;
       right: -90px;
@@ -32,7 +32,7 @@ body.widget {
       width: 220px;
       height: 220px;
       border-radius: var(--r-circle);
-      background: var(--brand-soft);
+      background: var(--mark);
       content: "";
       pointer-events: none;
     }

@@ -79,7 +79,7 @@ func defaultSettings() Settings {
 		Widget: WidgetSettings{
 			// Title 은 위젯 머리의 로고 옆 이름이다. 문장("무엇을 도와드릴까요?")을 두면 대화 머리에 질문이 이름처럼 뜬다(감사 18) — 인사 문장은 Greeting 이 맡는다.
 			Title: "고객센터", Greeting: "궁금한 점을 남겨 주시면 상담원이 확인하고 답해 드립니다.",
-			Color: "#6e6047", Position: "right", // 기본 관리자 색: 갈색(흰 글자 6.13:1, D41)
+			Color: "#c2410c", Position: "right", // 기본 관리자 색: 주황(흰 글자 5.18:1, D41)
 		},
 	}
 }

@@ -8,19 +8,20 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 :root {
-  --brand: #6e6047;
-  --brand-strong: #5a4f3a;
-  --brand-soft: #f2e9d6;
+  --brand: #c2410c;
+  --brand-strong: #9f350a;
+  --brand-soft: #fbf3e4;
   --brand-ink: #ffffff;
-  --brand-text: #6e6047;
-  --bg: #f8f7f4;
+  --brand-text: #c2410c;
+  --bg: #ffffff;
   --panel: #ffffff;
   --ink: #17181d;
   --ink-2: #4e5460;
   --ink-3: #696c76;
   --ink-4: #aaa8a2;
   --line: #e1e0e0;
-  --line-2: #f0eee8;
+  --line-2: #fcf5e8;
+  --cream: #fbf3e4;
   --ok: #04b395;
   --ok-ink: #027a66;
   --ok-soft: #e8f7f3;
@@ -32,7 +33,7 @@
   --memo: #fff9db;
   --memo-line: #ffe066;
   --memo-ink: #5c4600;
-  --mark: #e8dcc0;
+  --mark: #f6e7c9;
   --toast: #151310;
   --on-color: #ffffff;
   --media-bg: #000000;
@@ -458,28 +459,28 @@ textarea.input {
   font-size: 10px;
 }
 .avatar.tone-0 {
-  background: #3b5bdb;
+  background: #b45309;
 }
 .avatar.tone-1 {
-  background: #c2410c;
+  background: #9a3412;
 }
 .avatar.tone-2 {
-  background: #087f5b;
+  background: #be123c;
 }
 .avatar.tone-3 {
-  background: #9c36b5;
-}
-.avatar.tone-4 {
-  background: #c2255c;
-}
-.avatar.tone-5 {
-  background: #0b7285;
-}
-.avatar.tone-6 {
   background: #8a5a00;
 }
+.avatar.tone-4 {
+  background: #4d7c0f;
+}
+.avatar.tone-5 {
+  background: #6b5b3e;
+}
+.avatar.tone-6 {
+  background: #a3452c;
+}
 .avatar.tone-7 {
-  background: #6741d9;
+  background: #7c2d12;
 }
 .avatar.bot {
   background: var(--brand-soft);

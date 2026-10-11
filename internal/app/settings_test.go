@@ -105,8 +105,8 @@ func TestDefaultWidgetSettings(t *testing.T) {
 			t.Errorf("기본 인사말: %q", w.Greeting)
 		}
 	})
-	t.Run("기본 위젯 색은 갈색 #6e6047 이다", func(t *testing.T) {
-		if c := defaultSettings().Widget.Color; c != "#6e6047" {
+	t.Run("기본 위젯 색은 주황 #c2410c 이다", func(t *testing.T) {
+		if c := defaultSettings().Widget.Color; c != "#c2410c" {
 			t.Errorf("기본 위젯 색: %q", c)
 		}
 	})

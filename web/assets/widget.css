@@ -8,31 +8,6 @@ body.widget {
   overflow-wrap: anywhere;
 }
 
-@media (prefers-color-scheme: dark) {
-  body.widget {
-    --bg: #151310;
-    --panel: #201d18;
-    --ink: #f1eee8;
-    --ink-2: #c6c1b7;
-    --ink-3: #a6a095;
-    --ink-4: #665f54;
-    --line: #3a352c;
-    --line-2: #2a261f;
-    --danger-soft: rgba(240, 82, 82, 0.16);
-    --ok-soft: rgba(4, 179, 149, 0.16);
-    --ok-ink: #63e6be;
-    --warn-soft: rgba(251, 187, 61, 0.16);
-    --warn-ink: #ffc078;
-    --toast: #3a352c;
-    --brand-soft: color-mix(in srgb, var(--brand) 24%, transparent);
-    --brand-text: color-mix(in srgb, var(--brand) 55%, #ffffff);
-    --w-float: 0 2px 6px rgb(0 0 0 / 40%), 0 24px 60px -14px rgb(0 0 0 / 70%);
-    --shadow-head: 0 1px 0 var(--line);
-  }
-  body.widget:not(.embed) {
-    background: var(--bg);
-  }
-}
 html:has(> body.widget.embed),
 html.w-embed {
   background: transparent;
@@ -371,7 +346,7 @@ body.widget .w-hero {
   position: relative;
   padding: 24px 24px 28px;
   overflow: hidden;
-  background: var(--brand-soft);
+  background: var(--cream);
   color: var(--ink);
 }
 body.widget .w-hero::after {
@@ -381,7 +356,7 @@ body.widget .w-hero::after {
   width: 220px;
   height: 220px;
   border-radius: var(--r-circle);
-  background: var(--brand-soft);
+  background: var(--mark);
   content: "";
   pointer-events: none;
 }
@@ -874,7 +849,7 @@ body.widget .w-attach-btn {
   width: var(--w-tap);
   height: var(--w-tap);
   border-radius: var(--r-circle);
-  background: var(--brand-soft);
+  background: var(--cream);
   transition: filter var(--t-fast);
 }
 body.widget .w-attach-btn::before {
