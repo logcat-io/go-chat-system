@@ -30,7 +30,7 @@ OWNERS = {
            "internal/adapter/realtime/session_test.go", "internal/adapter/realtime/revalidate_test.go",
            "internal/adapter/realtime/dbtimeout_test.go", "internal/adapter/realtime/dbstep_test.go", "internal/adapter/realtime/errtrace_test.go", "internal/adapter/realtime/retry_test.go",
            "internal/adapter/pgstore/listener.go", "internal/adapter/pgstore/listener_test.go",
-           "internal/testsupport/testsupport.go"],
+           "internal/testsupport/testsupport.go", "internal/testsupport/testsupport_test.go"],
     "03": ["internal/auth/auth.go", "internal/auth/auth_test.go", "internal/adapter/pgstore/sessions.go", "internal/adapter/pgstore/sessions_test.go",
            "internal/adapter/httpapi/httpapi.go", "internal/adapter/httpapi/response.go", "internal/adapter/httpapi/session.go",
            "internal/adapter/httpapi/revalidate_internal_test.go", "internal/adapter/httpapi/errlog_internal_test.go", "internal/adapter/httpapi/errcode_internal_test.go", "internal/app/logging_internal_test.go",

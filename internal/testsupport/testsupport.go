@@ -4,6 +4,7 @@ package testsupport
 
 import (
 	"context"
+	"errors"
 	"net/url"
 	"os"
 	"strings"
@@ -11,13 +12,16 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/logcat-io/go-chat-system/internal/adapter/pgstore"
 	"github.com/logcat-io/go-chat-system/internal/core"
 	"github.com/logcat-io/go-chat-system/internal/id"
 )
 
-const defaultURL = "postgres://chat:chat@127.0.0.1:56432/chat?sslmode=disable"
+// defaultURL 은 개발 서버(make run)의 DB `chat` 과 같은 Postgres 안의 다른 DB 다.
+// 같은 DB 를 쓰면 테스트가 만든 상담 수천 건이 데스크 목록을 덮고, 열린 데스크 탭이 테스트 상담에 읽음을 남겨 테스트가 흔들린다.
+const defaultURL = "postgres://chat:chat@127.0.0.1:56432/chat_test?sslmode=disable"
 
 var (
 	once    sync.Once
@@ -38,6 +42,9 @@ func Store(t *testing.T) *pgstore.Store {
 	t.Helper()
 	once.Do(func() {
 		ctx := context.Background()
+		if openErr = ensureDatabase(ctx, URL()); openErr != nil {
+			return
+		}
 		shared, openErr = pgstore.Open(ctx, URL())
 		if openErr != nil {
 			return
@@ -80,6 +87,9 @@ func StoreWithPool(t *testing.T, maxConns int32) *pgstore.Store {
 func Isolated(t *testing.T) (*pgstore.Store, string) {
 	t.Helper()
 	ctx := context.Background()
+	if err := ensureDatabase(ctx, URL()); err != nil {
+		t.Skipf("Postgres 에 붙을 수 없어 건너뛴다 (make up 으로 띄운다): %v", err)
+	}
 	admin, err := pgx.Connect(ctx, URL())
 	if err != nil {
 		t.Skipf("Postgres 에 붙을 수 없어 건너뛴다 (make up 으로 띄운다): %v", err)
@@ -119,6 +129,34 @@ func Isolated(t *testing.T) (*pgstore.Store, string) {
 		t.Fatal(err)
 	}
 	return store, u.String()
+}
+
+// ensureDatabase 는 테스트 DB 가 없으면 같은 서버의 postgres DB 에 붙어 만든다. 처음 클론한 기계와 CI 에서 따로 만들 필요가 없다.
+func ensureDatabase(ctx context.Context, dbURL string) error {
+	c, err := pgx.Connect(ctx, dbURL)
+	if err == nil {
+		return c.Close(ctx)
+	}
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) || pgErr.Code != "3D000" { // invalid_catalog_name: DB 가 없다
+		return err
+	}
+	u, perr := url.Parse(dbURL)
+	if perr != nil {
+		return perr
+	}
+	name := strings.TrimPrefix(u.Path, "/")
+	u.Path = "/postgres"
+	admin, err := pgx.Connect(ctx, u.String())
+	if err != nil {
+		return err
+	}
+	defer admin.Close(ctx)
+	_, err = admin.Exec(ctx, `CREATE DATABASE "`+name+`"`)
+	if errors.As(err, &pgErr) && pgErr.Code == "42P04" { // duplicate_database: 다른 테스트 프로세스가 먼저 만들었다
+		return nil
+	}
+	return err
 }
 
 // Exec 는 테스트가 만들기 어려운 상태(관리자 0명 등)를 SQL 로 직접 만든다.

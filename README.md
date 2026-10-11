@@ -277,6 +277,7 @@ Postgres 장애 복구 시간, 브라우저별 `localStorage` 한도는 측정�
 | 환경변수 | 기본값 | 설명 |
 |---|---|---|
 | `CHAT_DATABASE_URL` | `postgres://chat:chat@127.0.0.1:56432/chat?sslmode=disable` | 로컬 compose 는 TLS 가 없어 `disable`. RDS 는 `sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem`(이미지에 CA 번들이 들어 있다. docs/deploy.md 3.2절) |
+| `CHAT_TEST_DATABASE_URL` | `postgres://chat:chat@127.0.0.1:56432/chat_test?sslmode=disable` | `go test` 만 읽는다. 개발 서버의 DB(`chat`)와 따로 두고, 없으면 테스트가 만든다 |
 | `CHAT_ADDR` | `:8090` | |
 | `CHAT_CATCHUP_INTERVAL` | `5s` | 안전망이 바뀐 대화를 DB 에서 모아 구독자를 깨우는 주기. NOTIFY 를 놓쳤을 때의 지연 상한이다. 0 은 거부한다 |
 | `CHAT_SESSION_TTL` | `720h` | 상담원 세션의 절대 수명이자 회원 세션 수명의 상한(회원 토큰 `exp` 와 이른 쪽). 익명 고객 세션에는 걸리지 않는다 — 만료가 없다(D46) |

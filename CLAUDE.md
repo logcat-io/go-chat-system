@@ -60,6 +60,7 @@ go test -race -p 1 -count=1 ./internal/adapter/httpapi/ -run '<이름>'   # 부�
 - 린트 지적을 무시할 때는 그 줄에 `//nolint:<린터> // <이유>` 를 단다. 이유 없는 nolint 는 두지 않는다.
 
 - Postgres 는 `docker compose up -d --wait`(포트 56432), MinIO 는 같은 compose(59100, `chat` / `chatchat123`).
+- 테스트의 기본 DB 는 같은 Postgres 의 `chat_test` 다(없으면 만든다). 개발 서버의 `chat` 을 쓰면 테스트 상담 수천 건이 데스크를 덮고 열린 데스크 탭이 테스트에 읽음을 남긴다(2026-10-11).
 - 서버: `make run`(빈 DB 면 `migrate` 와 데모 시드를 먼저 한다 — 서버 기동은 DB 에 쓰지 않는다, D49) → 데스크 `http://localhost:8090/desk`(`agent@example.com` / `chat1234`), 위젯 `/widget`.
 - S3 모드로 띄우기: `.env.example` 의 `CHAT_STORAGE=s3` 묶음.
 - 브라우저 검증과 전체 검증 한 번에: `../go-chat-system-work/run-all.sh`(리포 밖. 개발 DB 볼륨을 지운다). 화면을 고쳤으면 여기의 `uitest/demo.mjs`·`roles.mjs` 를 돌린다.
