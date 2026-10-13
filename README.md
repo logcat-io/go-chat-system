@@ -434,21 +434,3 @@ WebSocket 프레임은 JSON 이다. 브라우저가 보내는 건 `subscribe` ·
 서버가 보내는 건 `ready` · `message` · `ack` · `conversation` · `read` · `typing` · `error` ·
 `inbox_changed` · `pong`. `send` 는 `internal`(내부 메모)과 `attachment_id` 를 받는다.
 형식은 [internal/adapter/realtime/protocol.go](internal/adapter/realtime/protocol.go) 에 있다.
-
-## 더 읽을 것
-
-- [docs/design.md](docs/design.md) — 불변식 I1~I11, 결정 D1~D49, 실패 모드 표, 정책 886개(번호는 1~905, 지운 번호 19개는 표시만 남는다)
-- [docs/api.md](docs/api.md) — HTTP·WebSocket 계약 전체(요청·응답·오류 코드·닫기 코드). 라우트 표는 위가 요약이다
-- [docs/features.md](docs/features.md) — 되는 것과 안 되는 것, 근거 테스트
-- [docs/onboarding.md](docs/onboarding.md) — 처음 설치해서 상담 하나를 받기까지
-- [docs/deploy.md](docs/deploy.md) — AWS 배포 절차(CDN → ALB → ECS → RDS, D34)와 운영 런북
-- [docs/adr/](docs/adr/README.md) — 기술 결정 기록: Go 서버, 화면 구조, 업로드 방식, 디자인 시스템
-- [docs/perf/deploy-db.md](docs/perf/deploy-db.md) — 배포와 DB 를 뗀 근거와 전후 실측(D49)
-- [docs/guide/INDEX.md](docs/guide/INDEX.md) — 백지에서 다시 쓰는 14단계 개발 가이드
-- [docs/loadtest.md](docs/loadtest.md) · [docs/product-gaps.md](docs/product-gaps.md) — 측정치와 남은 일
-- [docs/proposals/](docs/proposals/) — 아직 도입하지 않은 다음 결정(저장소·장기 보관·검색·런타임)
-- 위젯 3D 아이콘 — Microsoft Fluent Emoji(MIT, https://github.com/microsoft/fluentui-emoji). 고지는 [web/assets/icons/LICENSE](web/assets/icons/LICENSE), 결정은 D38
-- Figma 화면 캡처 — https://www.figma.com/design/4Vb3pwKsxKVEptsWzvTusp (위젯 홈·대화, 데스크, 설정 + app.css 토큰 변수)
-- [internal/adapter/pgstore/messages.go](internal/adapter/pgstore/messages.go) — seq 발급 트랜잭션
-- [internal/adapter/realtime/hub.go](internal/adapter/realtime/hub.go) — 신호만 옮기는 허브
-- [web/assets/chat.js](web/assets/chat.js) — 브라우저 쪽 pending 큐와 갭 복구
